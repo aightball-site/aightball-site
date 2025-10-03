@@ -6,25 +6,29 @@
 <title>AIght Ball – See the odds, not just the answer</title>
 <style>
   :root{
-    --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#121212; --border:#2a2a2a;
+    --bg:#0d0d0d; --fg:#f2f2f2; --muted:#9aa0a6; --card:#121212; --border:#2a2a2a;
     --accent:#33cc99; --accent-hover:#2ab386;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0;
-    background:radial-gradient(1000px 600px at 70% -10%, #1a1a1a 0%, #0d0d0d 55%, #070707 100%);
-    color:var(--fg);
-    font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    min-height:100dvh;
-  }
-  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 88px;display:grid;gap:28px}
+  body{margin:0;background:radial-gradient(1000px 600px at 70% -10%, #1a1a1a 0%, #0d0d0d 55%, #070707 100%);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;min-height:100dvh}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 18px 88px;display:grid;gap:28px}
   header{display:flex;align-items:center;justify-content:space-between;gap:16px}
   .brand{font-weight:800;letter-spacing:.2px}
   .tag{opacity:.8;font-size:.92rem}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;overflow:hidden}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px}
 
   .grid{display:grid;gap:18px}
-  @media (min-width:980px){ .grid{grid-template-columns:480px 1fr} }
+  @media (min-width:980px){ .grid{grid-template-columns:500px 1fr} }
+
+  /* micro logo badge (returns!) */
+  .logo-badge{
+    position:fixed;left:14px;bottom:14px;z-index:20;
+    display:flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;background:#0f0f0f;border:1px solid #262626;box-shadow:0 6px 18px rgba(0,0,0,.25);
+    font-weight:700;opacity:.9
+  }
+  .logo-dot{width:18px;height:18px;border-radius:50%;background:#111;position:relative;box-shadow:inset 0 0 0 2px #2a2a2a, inset 0 6px 10px rgba(255,255,255,.08)}
+  .logo-dot:after{content:"8";position:absolute;inset:0;display:grid;place-items:center;font-size:12px;color:#cfcfcf;font-weight:900}
 
   /* 8-ball */
   .ball-wrap{display:flex;align-items:center;justify-content:center;padding:22px}
@@ -38,45 +42,50 @@
   .triangle{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     width:170px;height:150px;
-    background:linear-gradient(180deg,#6a49b8 0%,#5336a4 100%); /* solid gradient = no seam */
+    background:linear-gradient(180deg,#6a49b8 0%,#4d35a1 100%);
     clip-path:polygon(50% 0%, 0% 100%, 100% 100%);
-    display:grid;place-items:center;
-    box-shadow:0 10px 30px rgba(90,60,150,.35);
+    display:grid;place-items:center;isolation:isolate;
+    box-shadow:0 12px 28px rgba(90,60,150,.35);
+  }
+  /* subtle bevel + inner glow to sell the “plastic” look */
+  .triangle:before{
+    content:"";position:absolute;inset:0;clip-path:inherit;border-radius:0;
+    background:linear-gradient(160deg, rgba(255,255,255,.18), rgba(0,0,0,.0) 40%),
+               radial-gradient(120px 60px at 50% 20%, rgba(255,255,255,.16), transparent 60%),
+               radial-gradient(200px 150px at 50% 120%, rgba(0,0,0,.35), transparent 60%);
+    mix-blend-mode:soft-light;pointer-events:none;
+  }
+  .triangle:after{
+    content:"";position:absolute;inset:10px 14px;clip-path:inherit;border-radius:0;
+    box-shadow:inset 0 0 0 1.2px rgba(230,220,255,.25);
   }
   .tri-text{
-    width:72%;
-    font-size:12px; /* smaller so it never collides with edges */
-    line-height:1.15;
-    text-align:center;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    color:#e9e1ff;
-    opacity:.95;
-    text-shadow:0 1px 0 rgba(0,0,0,.5);
+    width:72%;font-size:11px;line-height:1.1;text-align:center;text-transform:uppercase;
+    letter-spacing:.1em;color:#efe9ff;opacity:.96;text-shadow:0 1px 0 rgba(0,0,0,.55);user-select:none
   }
 
-  .prompt{display:flex;gap:10px}
-  input[type="text"]{flex:1;background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:14px 14px;color:var(--fg);outline:none}
+  /* prompt row – more room for button & answers */
+  .prompt{display:grid;grid-template-columns:1fr auto;gap:10px}
+  input[type="text"]{flex:1;background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--fg);outline:none}
   input::placeholder{color:#8e8e8e}
-  button{background:var(--accent);color:#062e22;border:none;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer}
+  button{background:var(--accent);color:#062e22;border:none;border-radius:12px;padding:14px 18px;font-weight:800;cursor:pointer}
   button:hover{background:var(--accent-hover)}
   .hint{color:var(--muted);font-size:.9rem}
 
   /* Results */
   .results{display:grid;gap:12px}
   .row{
-    display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+    display:grid;grid-template-columns:1fr auto;gap:12px;align-items:flex-start;
     background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:12px;
   }
-  .answer{font-weight:600}
-  .bar{height:8px;border-radius:999px;background:#1b1b1b;overflow:hidden;margin-top:8px}
+  .answer{font-weight:600;line-height:1.25}
+  .bar{height:8px;border-radius:999px;background:#1b1b1b;overflow:hidden;margin-top:10px}
   .fill{height:100%;background:linear-gradient(90deg, #33cc99, #2ab386)}
   .pct{font-variant-numeric:tabular-nums;font-weight:800;opacity:.9}
 
   .tone{display:flex;align-items:center;gap:8px}
   .tone select{background:#0e0e0e;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:8px}
 
-  /* subtle shake */
   .ball.shake{animation:shake .6s ease}
   @keyframes shake{
     0%{transform:translate(0,0) rotate(0)}
@@ -87,9 +96,10 @@
     100%{transform:translate(0,0) rotate(0)}
   }
 
-  /* clean up: remove the feature blurbs that were causing visual “ghosts” */
-  .badges{display:flex;gap:10px;flex-wrap:wrap}
-  .chip{border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#0e0e0e;color:var(--muted);font-size:.9rem}
+  /* compact helper text (was getting cut off) */
+  details.helper{margin-top:4px}
+  summary{cursor:pointer;color:var(--muted)}
+  summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
@@ -125,16 +135,14 @@
       <div class="card">
         <div class="grid">
           <div class="prompt">
-            <input id="question" type="text" placeholder="Ask anything… (e.g., 'I live in Boston and want Italian')" />
+            <input id="question" type="text" placeholder="Ask anything… (e.g., 'Boston Italian tonight' or 'Should I text them back?')" />
             <button id="askBtn">Ask</button>
           </div>
 
-          <!-- small, non-intrusive badges (replaces the big blurbs) -->
-          <div class="badges">
-            <span class="chip">Multi-outcomes sum to 100%</span>
-            <span class="chip">Heuristics now, API-ready</span>
-            <span class="chip">Tone ladder applied</span>
-          </div>
+          <details class="helper">
+            <summary>Tip (optional)</summary>
+            <div class="hint">Try location + cuisine (“I’m in Boston, craving sushi”) or decision prompts (“Quit my job?”). Local recs are scaffolded; we’ll wire APIs next.</div>
+          </details>
 
           <div class="results" id="results"></div>
           <div class="hint" id="localTip" style="display:none;"></div>
@@ -143,30 +151,164 @@
     </div>
   </div>
 
+  <!-- tiny floating logo -->
+  <div class="logo-badge"><span class="logo-dot"></span>AIght Ball</div>
+
 <script>
 /* =========================
    Core knobs
    ========================= */
-const DEFAULT_OUTCOME_COUNT = 3;
+let DEFAULT_OUTCOME_COUNT = 3;     // dining autoscales to 4
 const MIN_PCT = 7;
 const USE_DIRICHLET = true;
 
 /* =========================
-   Tone Ladder (scaffold)
+   Micro-coaching phrases (varied, not repetitive)
    ========================= */
-const toneRenderers = {
-  friend: (q, line) =>
-    `${line} (I’ve got your back—pick what feels light and doable.)`,
-  confidant: (q, line) =>
-    `${line} You’ve got a few good paths here; consider energy & boundaries.`,
-  counselor: (q, line) =>
-    `${line} If this touches something heavy, choose the gentlest next step.`,
-  gm: (q, line) =>
-    `🎲 ${line} — the scene shifts as you decide; fortune favors momentum.`,
-  altHistory: (q, line) =>
-    `${line} Imagine two timelines; the differential grows with each choice.`,
+const microAdvice = {
+  friend: [
+    "low effort, high vibe",
+    "fits tonight’s energy",
+    "keeps the budget sane",
+    "quick win, no overthinking",
+  ],
+  confidant: [
+    "respect your bandwidth",
+    "check in with your future self",
+    "protect your calendar",
+    "set one clear boundary first",
+  ],
+  counselor: [
+    "keep it gentle",
+    "plan one safe step",
+    "loop in someone you trust",
+    "sleep on it if you need",
+  ],
+  gm: [
+    "roll initiative on the smallest step",
+    "bank inspiration with a tiny win",
+    "avoid the random encounter of burnout",
+    "loot the lesson, not just the outcome",
+  ],
+  altHistory: [
+    "this choice compounds",
+    "small deltas now become big timelines",
+    "note the switching cost",
+    "reversibility matters here",
+  ]
+};
+function one(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+/* =========================
+   Domains & specific outcomes
+   ========================= */
+const foodMenus = {
+  italian: [
+    "Cacio e pepe at a cozy trattoria",
+    "Neapolitan margherita pizza (wood-fired)",
+    "Tagliatelle bolognese with fresh pasta",
+    "Chicken parm hero + side Caesar",
+    "Arancini and a glass of Montepulciano",
+  ],
+  sushi: [
+    "Omakase counter (chef’s choice)",
+    "Spicy tuna crispy rice + miso soup",
+    "Chirashi bowl (balanced + filling)",
+    "Salmon nigiri flight + edamame",
+    "Tempura udon for a warm comfort pick",
+  ],
+  thai: [
+    "Pad see ew with Chinese broccoli",
+    "Green curry (medium heat) + jasmine rice",
+    "Tom kha soup and crispy spring rolls",
+    "Pad kra pao with a fried egg",
+    "Mango sticky rice for dessert",
+  ],
+  pizza: [
+    "NY-style foldable slice joint",
+    "Detroit square with frico edges",
+    "Sicilian grandma pie (thick + saucy)",
+    "White pie with ricotta + garlic",
+    "Pepperoni cups, extra crisp",
+  ]
 };
 
+const relOptions = [
+  "Have the talk tonight—15 min, one outcome to decide",
+  "Send a warm check-in text and suggest coffee in daylight",
+  "Take 48 hours of space; write your three non-negotiables",
+  "Name the pattern once without blame; propose a tiny experiment",
+  "Pause the romance, keep the friendship lane open for 30 days",
+];
+
+const careerMoves = [
+  "Draft a 1-page pitch and ask one mentor for notes",
+  "Book an informational chat with someone doing your target role",
+  "Run a 2-week experiment after hours; measure it once",
+  "Delay the leap; upskill with one specific course",
+  "Say no for now—protect runway and revisit in 30 days",
+];
+
+const genericPaths = [
+  "Go for it (controlled scope)",
+  "Wait & gather one key signal",
+  "Pivot to a simpler version",
+  "Say no—protect your time",
+  "Ask someone you trust first",
+];
+
+function detectDomain(q){
+  const text = (q||'').toLowerCase();
+  const has = (re)=> re.test(text);
+  if (/(italian|pasta|parm|margherita)/.test(text)) return {domain:"food", sub:"italian"};
+  if (/(sushi|omakase|nigiri|chirashi)/.test(text)) return {domain:"food", sub:"sushi"};
+  if (/(thai|pad see ew|green curry|tom kha|kra pao)/.test(text)) return {domain:"food", sub:"thai"};
+  if (/(pizza|slice|pepperoni|neapolitan|detroit)/.test(text)) return {domain:"food", sub:"pizza"};
+  if (/(date|text.*back|relationship|partner|break ?up|crush)/.test(text)) return {domain:"relationships"};
+  if (/(job|career|promotion|quit|switch|offer|interview)/.test(text)) return {domain:"career"};
+  return {domain:"generic"};
+}
+
+function makeOutcomes(question, n, toneKey){
+  const {domain, sub} = detectDomain(question);
+
+  if (domain === "food") {
+    DEFAULT_OUTCOME_COUNT = 4;
+    const pool = foodMenus[sub] || [].concat(...Object.values(foodMenus));
+    return pickN(pool, DEFAULT_OUTCOME_COUNT).map(x => withAdvice(x, toneKey));
+  }
+  if (domain === "relationships") {
+    return pickN(relOptions, n).map(x => withAdvice(x, toneKey));
+  }
+  if (domain === "career") {
+    return pickN(careerMoves, n).map(x => withAdvice(x, toneKey));
+  }
+  return pickN(genericPaths, n).map(x => withAdvice(x, toneKey));
+}
+
+function withAdvice(line, toneKey){
+  const bucket = microAdvice[toneKey] || microAdvice.friend;
+  return `${line} — ${one(bucket)}.`;
+}
+
+function pickN(pool, n){
+  const copy = [...pool], out = [];
+  for (let i=0; i<n && copy.length; i++){
+    out.push(copy.splice(Math.floor(Math.random()*copy.length),1)[0]);
+  }
+  return out;
+}
+
+/* =========================
+   Tone detection
+   ========================= */
+const toneRenderers = {
+  friend: (q, line) => line,
+  confidant: (q, line) => line,
+  counselor: (q, line) => line,
+  gm: (q, line) => `🎲 ${line}`,
+  altHistory: (q, line) => line,
+};
 function chooseTone(question, explicit) {
   if (explicit && explicit !== 'auto') return explicit;
   const q = (question || '').toLowerCase();
@@ -182,39 +324,10 @@ function chooseTone(question, explicit) {
 }
 
 /* =========================
-   Outcome generator
+   Percent splitter
    ========================= */
-const templateBuckets = {
-  generic: [
-    "Go for it",
-    "Wait & gather more info",
-    "Pivot to a simpler version",
-    "Say no (protect your time)",
-    "Ask someone you trust first"
-  ],
-  dining: [
-    "Budget-friendly comfort",
-    "Classic, reliable spot",
-    "Hidden neighborhood gem",
-    "Trendy pick with a vibe",
-    "Make it at home tonight"
-  ]
-};
-
-function pickTemplates(question, n) {
-  const q = (question || '').toLowerCase();
-  let pool = templateBuckets.generic;
-  if (/food|restaurant|dinner|lunch|eat|italian|sushi|tacos|pizza|thai|ramen|bbq|indian|greek/.test(q)) {
-    pool = templateBuckets.dining;
-  }
-  const copy = [...pool], out = [];
-  for (let i=0; i<n && copy.length; i++){
-    const idx = Math.floor(Math.random()*copy.length);
-    out.push(copy.splice(idx,1)[0]);
-  }
-  return out;
-}
-
+const MIN_PCT = 7;
+const USE_DIRICHLET = true;
 function splitPercentages(n, minEach=MIN_PCT) {
   const totalMin = n * minEach;
   if (totalMin > 100) {
@@ -224,33 +337,22 @@ function splitPercentages(n, minEach=MIN_PCT) {
     return arr;
   }
   const remaining = 100 - totalMin;
-  if (USE_DIRICHLET) {
-    const gammas = Array.from({length:n},()=> -Math.log(Math.random()));
-    const sum = gammas.reduce((s,x)=>s+x,0) || 1;
-    const shares = gammas.map(g => g/sum);
-    let pcts = shares.map(s => Math.floor(s*remaining));
-    let used = pcts.reduce((s,x)=>s+x,0);
-    for (let i=0; i<remaining-used; i++) pcts[i%pcts.length]++;
-    return pcts.map(v => v + minEach);
-  } else {
-    const cuts = Array.from({length:n-1}, ()=>Math.random()).sort((a,b)=>a-b);
-    const parts = []; let prev = 0;
-    for (const c of cuts){ parts.push(c - prev); prev = c; }
-    parts.push(1 - prev);
-    let pcts = parts.map(p => Math.floor(p*remaining));
-    let used = pcts.reduce((s,x)=>s+x,0);
-    for (let i=0; i<remaining-used; i++) pcts[i%pcts.length]++;
-    return pcts.map(v => v + minEach);
-  }
+  const gammas = Array.from({length:n},()=> -Math.log(Math.random()));
+  const sum = gammas.reduce((s,x)=>s+x,0) || 1;
+  const shares = gammas.map(g => g/sum);
+  let pcts = shares.map(s => Math.floor(s*remaining));
+  let used = pcts.reduce((s,x)=>s+x,0);
+  for (let i=0; i<remaining-used; i++) pcts[i%pcts.length]++;
+  return pcts.map(v => v + minEach);
 }
 
 /* =========================
-   Lightweight local intent
+   Local intent (still stub)
    ========================= */
-function detectCityCuisine(question){
-  const q = (question||'').toLowerCase();
-  const city = (q.includes('boston') ? 'Boston' : null);
-  const cuisineMatch = q.match(/italian|sushi|thai|pizza|tacos|ramen|bbq|indian|greek|mediterranean/);
+function detectCityCuisine(q){
+  const text=(q||'').toLowerCase();
+  const city = text.includes('boston') ? 'Boston' : null;
+  const cuisineMatch = text.match(/italian|sushi|thai|pizza|tacos|ramen|bbq|indian|greek|mediterranean/);
   return { city, cuisine: cuisineMatch ? cuisineMatch[0] : null };
 }
 
@@ -265,10 +367,10 @@ const elLocalTip = document.getElementById('localTip');
 function renderResults(question, toneKey) {
   elResults.innerHTML = '';
 
-  const outcomes = pickTemplates(question, DEFAULT_OUTCOME_COUNT);
+  const tone = chooseTone(question, toneKey);
+  const outcomes = makeOutcomes(question, 3, tone).map(x => toneRenderers[tone](question, x));
   const pcts = splitPercentages(outcomes.length);
   const { city, cuisine } = detectCityCuisine(question);
-  const tone = toneRenderers[toneKey] ? toneKey : 'friend';
 
   outcomes
     .map((label, i) => ({ label, pct: pcts[i] }))
@@ -277,8 +379,7 @@ function renderResults(question, toneKey) {
       const row = document.createElement('div'); row.className='row';
 
       const left = document.createElement('div');
-      const ans = document.createElement('div'); ans.className='answer';
-      ans.textContent = toneRenderers[tone](question, label);
+      const ans = document.createElement('div'); ans.className='answer'; ans.textContent = label;
 
       const bar = document.createElement('div'); bar.className='bar';
       const fill = document.createElement('div'); fill.className='fill'; fill.style.width = pct + '%';
@@ -297,7 +398,7 @@ function renderResults(question, toneKey) {
     const want = cuisine ? cuisine : 'good';
     const where = city ? `in ${city}` : 'near you';
     elLocalTip.style.display = 'block';
-    elLocalTip.textContent = `🔜 Local picks scaffolded: “Find ${want} spots ${where}.” (We’ll wire Google Places/Yelp soon.)`;
+    elLocalTip.textContent = `🔜 Local picks scaffolded: “Find ${want} spots ${where}.” (We’ll wire Places/Yelp soon.)`;
   } else {
     elLocalTip.style.display = 'none';
   }
@@ -322,6 +423,8 @@ renderResults('', 'friend');
 </script>
 </body>
 </html>
+
+
 
 
 

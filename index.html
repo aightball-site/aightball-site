@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIght Ball – Coming Soon</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --fg: #f2f2f2;
+      --muted: #bbbbbb;
+      --card: #111111;
+      --border: #333;
+      --accent: #33cc99;
+      --accent-hover: #2ab386;
+      --triW: 160px;   /* triangle total width */
+      --triH: 140px;   /* triangle height */
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
+      color: var(--fg);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto; /* hero, demo, signup, footer */
+      align-items: start;
+    }
+    .hero {
+      display: grid;
+      place-items: center;
+      padding: 2.25rem 1.25rem 0.75rem;
+    }
+    .hero img {
+      width: min(70vw, 500px);
+      max-height: 45vh;
+      object-fit: contain;
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Demo Card */
+    .demo {
+      margin: 0.5rem auto 0;
+      padding: 1.5rem 1.25rem 2rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: min(92vw, 720px);
+      background: linear-gradient(180deg, #121212, var(--card));
+      box-shadow: 0 24px 50px rgba(0,0,0,.35);
+    }
+
+    /* Mystical Eight Ball */
+    .oracle-wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      margin-bottom: 1rem;
+      padding: 1rem 0;
+      overflow: visible;
+    }
+
+    /* Floating sparkly mist */
+    .mist,
+    .mist::before,
+    .mist::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      filter: blur(26px);
+      background:
+        radial-gradient(120px 120px at 30% 40%, rgba(51,204,153,.12), transparent 10%),
+        radial-gradient(180px 180px at 70% 30%, rgba(100,180,255,.10), transparent 10%),
+        radial-gradient(140px 140px at 50% 70%, rgba(255,255,255,.06), transparent 10%);
+      animation: drift 18s ease-in-out infinite;
+      opacity: .6;
+      transform: translate3d(0,0,0);
+    }
+    .mist { top: -40px; left: 50%; transform: translateX(-50%); }
+    .mist::before { top: -30px; left: -80px; animation-duration: 22s; animation-direction: reverse; }
+    .mist::after  { top:  10px; left:  80px; animation-duration: 26s; opacity: .5; }
+    @keyframes drift {
+      0%   { transform: translate(-50%, 0) rotate(0deg); opacity:.55; }
+      50%  { transform: translate(-48%, -8px) rotate(6deg); opacity:.8; }
+      100% { transform: translate(-50%, 0) rotate(0deg); opacity:.55; }
+    }
+
+    .eightball {
+      position: relative;
+      width: min(68vw, 360px);
+      height: min(68vw, 360px);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
+      box-shadow: inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      transition: transform .2s cubic-bezier(.2,.8,.2,1);
+    }
+    .eightball::before { /* sheen */
+      content: "";
+      position: absolute;
+      top: 6%; left: 12%;
+      width: 40%; height: 28%;
+      background: radial-gradient(ellipse at top left, rgba(255,255,255,.22), rgba(255,255,255,0));
+      filter: blur(4px);
+      transform: rotate(-12deg);
+      pointer-events: none;
+    }
+    .window {
+      position: relative;
+      width: 50%; height: 50%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
+      box-shadow: inset 0 0 40px rgba(0,0,0,.9);
+      display: grid; place-items: center;
+      border: 2px solid #0f2a3a;
+    }
+
+.window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 70%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+    .triangle {
+      position: absolute;
+      left: 50%;
+      top: 58%; /* slightly lower to look centered */
+      transform: translate(-50%, -50%);
+      width: 0; height: 0;
+      border-left: calc(var(--triW) / 2) solid transparent;
+      border-right: calc(var(--triW) / 2) solid transparent;
+      border-top: var(--triH) solid #163a5a;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.6));
+    }
+    .triangle .msg {
+      position: absolute;
+      left: 50%;
+      top: calc(-1 * var(--triH) * 0.72); /* pull text up into the triangle */
+      transform: translateX(-50%);
+      width: calc(var(--triW) * 0.8);
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.05rem; /* bigger text inside the 8-ball */
+      letter-spacing: 0.5px;
+      color: #cde7ff;
+      text-shadow: 0 1px 0 rgba(0,0,0,.5);
+      line-height: 1.2;
+      margin: 0 auto;
+    }
+
+    .qa {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1rem 0 0.25rem;
+    }
+    .helper { color: var(--muted); margin: 0.25rem 0 0.75rem; text-align: center; }
+
+    .readout { text-align: center; margin: 0.5rem 0 0; line-height: 1.45; }
+
+    /* Signup (moved BELOW demo) */
+    .signup {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0 1rem;
+      margin: 1rem auto 0;
+    }
+    input[type="email"], input[type="text"] {
+      padding: 0.85rem 0.9rem;
+      border: none;
+      border-radius: 10px;
+      min-width: 280px;
+      background: #1a1a1a;
+      color: var(--fg);
+      outline: 1px solid var(--border);
+    }
+    button {
+      padding: 0.9rem 1.2rem;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #02120d;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
+      box-shadow: 0 8px 18px rgba(51,204,153,.25);
+    }
+    button:hover { background: var(--accent-hover); }
+    button:active { transform: translateY(1px); }
+
+    footer {
+      margin: 1.25rem 0 1.5rem;
+      text-align: center;
+      color: #8a8a8a;
+      font-size: 0.95rem;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+    /* Shake animation */
+    @keyframes wobble {
+      0%{ transform: rotate(0deg) translateX(0); }
+      20%{ transform: rotate(3deg) translateX(6px); }
+      40%{ transform: rotate(-3deg) translateX(-6px); }
+      60%{ transform: rotate(2deg) translateX(4px); }
+      80%{ transform: rotate(-2deg) translateX(-4px); }
+      100%{ transform: rotate(0deg) translateX(0); }
+    }
+    .shake { animation: wobble .6s ease-in-out; }
+      .window{ position: relative; width:50%; height:50%; border-radius:50%; background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%); box-shadow: inset 0 0 40px rgba(0,0,0,.9); display:grid; place-items:center; border:2px solid #0f2a3a; overflow:hidden; }
+
+    /* Inner mist inside the circular window */
+    .window::after{
+      content:"";
+      position:absolute;
+      inset:-99%;
+      opacity: 0.05; 
+      background:
+        radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
+        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.10), transparent 60%),
+        radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
+      filter: blur(18px) saturate(1.05);
+      mix-blend-mode: screen;
+      animation: swirl 22s ease-in-out infinite;
+      pointer-events:none;
+      border-radius: 50%;
+      clip-path: circle(50% at 50% 50%);
+    }
+
+    /* Mist inside the triangle only (masked with clip-path) */
+    .triangle::after{
+      content:"";
+      position:absolute;
+      left:50%; top:calc(-1 * var(--triH));
+      transform: translateX(-50%);
+      width: var(--triW); height: var(--triH);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background:
+        radial-gradient(200px 200px at 65% 60%, rgba(180,220,255,.20), transparent 40%),
+        radial-gradient(200px 200px at 65% 75%, rgba(51,204,153,.20), transparent 40%);
+      filter: blur(10px);
+      mix-blend-mode: screen;
+      opacity:.7;
+      animation: swirl 18s ease-in-out infinite reverse;
+      pointer-events:none;
+    }
+
+    @keyframes swirl{
+      0%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
+      50%{ transform: translateX(-50%) rotate(5deg); opacity:.85; }
+      100%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- HERO: Big centered logo only -->
+  <section class="hero" aria-label="AIght Ball">
+    <!-- IMPORTANT: case-sensitive path. Update to match your actual file name. -->
+    <img src="Images/Logo.jpg" alt="AIght Ball logo" />
+  </section>
+
+  <!-- Demo with Mystical 8-Ball UI -->
+  <section class="demo" role="region" aria-label="AIght Ball demo">
+    <div class="oracle-wrap">
+      <div class="mist"></div>
+      <div id="orb" class="eightball" aria-hidden="true">
+        <div class="window">
+          <div class="triangle">
+            <div id="orb-msg" class="msg">ASK A QUESTION</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="question-form" class="qa" autocomplete="off">
+      <label class="sr-only" for="user-question">Ask a yes/no question</label>
+      <input id="user-question" type="text" name="question" placeholder="Ask a yes/no question…" maxlength="140" />
+      <button type="submit" aria-label="Ask the AIght Ball">Ask</button>
+      <button type="button" id="shake-btn" aria-label="Shake the ball">Shake It</button>
+    </form>
+    <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
+
+    <p id="demo-odds" class="readout">🎲 Odds: --%</p>
+    <p id="demo-text" class="readout">✨ Waiting for your question…</p>
+  </section>
+
+  <!-- Early access signup (now below the fun) -->
+  <form class="signup" name="signup" method="POST" data-netlify="true">
+    <input type="email" name="email" placeholder="Enter your email for early access" required />
+    <button type="submit">Notify Me</button>
+  </form>
+
+  <footer>
+    © 2025 AIght Ball · Follow us on 
+    <a href="https://instagram.com/aightball.io" target="_blank" rel="noopener">Instagram</a> &
+    <a href="https://youtube.com/@aightballio" target="_blank" rel="noopener">YouTube</a>
+  </footer>
+
+ <script>
+  const orb = document.getElementById('orb');
+  const orbMsg = document.getElementById('orb-msg');
+  const oddsOut = document.getElementById('demo-odds');
+  const textOut = document.getElementById('demo-text');
+  const inputEl = document.getElementById('user-question');
+
+  // Small helper: animate the ball
+  function shakeOrb() {
+    orb.classList.remove('shake');
+    void orb.offsetWidth; // restart animation
+    orb.classList.add('shake');
+  }
+
+  // Fallback phrases if API hiccups
+  const fallback = () => ({
+    short: "62%",
+    long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
+    odds: 62
+  });
+
+  async function askAightBall(question) {
+    try {
+      const resp = await fetch("/api/reading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+
+      // If server returns 405 when opening directly, this handles it gracefully
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+
+      // Minimal sanity checks
+      const odds = Number.isFinite(Number(data?.odds)) ? Math.max(0, Math.min(100, Math.round(data.odds))) : 50;
+      const long = (typeof data?.long === "string" && data.long.trim()) ? data.long.trim() : fallback().long;
+      const short = /^\d{1,3}%$/.test(String(data?.short)) ? String(data.short) : `${odds}%`;
+
+      // Render to UI
+      oddsOut.textContent = `🎲 Odds: ${odds}%`;
+      textOut.textContent = `✨ ${long}`;
+      orbMsg.textContent = short;
+      shakeOrb();
+    } catch (e) {
+      const f = fallback();
+      oddsOut.textContent = `🎲 Odds: ${f.odds}%`;
+      textOut.textContent = `✨ ${f.long}`;
+      orbMsg.textContent = f.short;
+      shakeOrb();
+      console.warn("AIght Ball fallback (API issue):", e);
+    }
+  }
+
+  // Hook up the existing buttons/forms
+  document.getElementById('shake-btn').addEventListener('click', () => {
+    const q = inputEl.value.trim() || "Surprise me";
+    askAightBall(q);
+  });
+
+  document.getElementById('question-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = inputEl.value.trim() || "Surprise me";
+    askAightBall(q);
+  });
+</script>
+</body>
+</html>
+

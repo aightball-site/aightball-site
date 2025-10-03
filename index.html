@@ -313,21 +313,31 @@
     <a href="https://youtube.com/@aightballio" target="_blank" rel="noopener">YouTube</a>
   </footer>
 
- <script>
+<script>
   const orb = document.getElementById('orb');
   const orbMsg = document.getElementById('orb-msg');
   const oddsOut = document.getElementById('demo-odds');
   const textOut = document.getElementById('demo-text');
   const inputEl = document.getElementById('user-question');
+  const askBtn = document.querySelector('#question-form button[type="submit"]');
+  const shakeBtn = document.getElementById('shake-btn');
 
-  // Small helper: animate the ball
   function shakeOrb() {
     orb.classList.remove('shake');
-    void orb.offsetWidth; // restart animation
+    void orb.offsetWidth;
     orb.classList.add('shake');
   }
 
-  // Fallback phrases if API hiccups
+  function setLoading(on) {
+    askBtn.disabled = on;
+    shakeBtn.disabled = on;
+    if (on) {
+      orbMsg.textContent = "…";
+      oddsOut.textContent = "🎲 Odds: —";
+      textOut.textContent = "✨ Consulting the orb…";
+    }
+  }
+
   const fallback = () => ({
     short: "62%",
     long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
@@ -335,25 +345,36 @@
   });
 
   async function askAightBall(question) {
+    setLoading(true);
+    let timer;
     try {
+      const controller = new AbortController();
+      timer = setTimeout(() => controller.abort(), 20000);
+
       const resp = await fetch("/api/reading", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question }),
+        signal: controller.signal
       });
 
-      // If server returns 405 when opening directly, this handles it gracefully
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
+      const data = await resp.json().catch(() => null);
 
-      // Minimal sanity checks
-      const odds = Number.isFinite(Number(data?.odds)) ? Math.max(0, Math.min(100, Math.round(data.odds))) : 50;
-      const long = (typeof data?.long === "string" && data.long.trim()) ? data.long.trim() : fallback().long;
-      const short = /^\d{1,3}%$/.test(String(data?.short)) ? String(data.short) : `${odds}%`;
+      const odds = Number.isFinite(Number(data?.odds))
+        ? Math.max(0, Math.min(100, Math.round(data.odds)))
+        : 50;
 
-      // Render to UI
+      const long = (typeof data?.long === "string" && data.long.trim())
+        ? data.long.trim()
+        : fallback().long;
+
+      const short = /^\d{1,3}%$/.test(String(data?.short))
+        ? String(data.short)
+        : `${odds}%`;
+
       oddsOut.textContent = `🎲 Odds: ${odds}%`;
-      textOut.textContent = `✨ ${long}`;
+      // If the function returned debug info, append it faintly so you can see issues during testing
+      textOut.textContent = `✨ ${long}` + (data?.debug ? ` (debug: ${JSON.stringify(data.debug)})` : "");
       orbMsg.textContent = short;
       shakeOrb();
     } catch (e) {
@@ -362,11 +383,13 @@
       textOut.textContent = `✨ ${f.long}`;
       orbMsg.textContent = f.short;
       shakeOrb();
-      console.warn("AIght Ball fallback (API issue):", e);
+      console.warn("AIght Ball fallback (timeout/network):", e);
+    } finally {
+      clearTimeout(timer);
+      setLoading(false);
     }
   }
 
-  // Hook up the existing buttons/forms
   document.getElementById('shake-btn').addEventListener('click', () => {
     const q = inputEl.value.trim() || "Surprise me";
     askAightBall(q);
@@ -380,4 +403,5 @@
 </script>
 </body>
 </html>
+
 

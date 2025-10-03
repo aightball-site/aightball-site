@@ -7,28 +7,54 @@
 <style>
   :root{
     --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#121212; --border:#2a2a2a;
-    --accent:#33cc99; --accent-hover:#2ab386; --good:#35c77a; --meh:#d0b23f; --bad:#e05b5b;
+    --accent:#33cc99; --accent-hover:#2ab386;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1000px 600px at 70% -10%, #1a1a1a 0%, #0d0d0d 55%, #070707 100%);
-       color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;min-height:100dvh}
-  .wrap{max-width:980px;margin:0 auto;padding:28px 18px 88px;display:grid;gap:28px}
+  body{
+    margin:0;
+    background:radial-gradient(1000px 600px at 70% -10%, #1a1a1a 0%, #0d0d0d 55%, #070707 100%);
+    color:var(--fg);
+    font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    min-height:100dvh;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 88px;display:grid;gap:28px}
   header{display:flex;align-items:center;justify-content:space-between;gap:16px}
   .brand{font-weight:800;letter-spacing:.2px}
   .tag{opacity:.8;font-size:.92rem}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;overflow:hidden}
+
   .grid{display:grid;gap:18px}
-  @media (min-width:900px){ .grid{grid-template-columns:420px 1fr} }
+  @media (min-width:980px){ .grid{grid-template-columns:480px 1fr} }
 
   /* 8-ball */
   .ball-wrap{display:flex;align-items:center;justify-content:center;padding:22px}
-  .ball{width:280px;height:280px;border-radius:50%;position:relative;background:radial-gradient(circle at 40% 35%, #2f2f2f 0%, #0c0c0c 55%, #000 100%);box-shadow:0 30px 60px rgba(0,0,0,.55) inset, 0 14px 30px rgba(0,0,0,.55)}
+  .ball{
+    width:300px;height:300px;border-radius:50%;position:relative;
+    background:radial-gradient(circle at 40% 35%, #2f2f2f 0%, #0c0c0c 55%, #000 100%);
+    box-shadow:0 30px 60px rgba(0,0,0,.55) inset, 0 14px 30px rgba(0,0,0,.55);
+  }
   .shine{position:absolute;inset:0;border-radius:50%;
     background:radial-gradient(180px 120px at 70px 60px, rgba(255,255,255,.14), transparent 60%);}
-  .triangle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:160px;height:140px;background:conic-gradient(from 0deg at 50% 85%, #5d3c9a, #6a49b8, #3a2173);
-    clip-path:polygon(50% 0%, 0% 100%, 100% 100%);display:grid;place-items:center;box-shadow:0 10px 30px rgba(90,60,150,.3)}
-  .tri-text{font-size:14px;text-transform:uppercase;letter-spacing:.14em;color:#d8c8ff;opacity:.95}
+  .triangle{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:170px;height:150px;
+    background:linear-gradient(180deg,#6a49b8 0%,#5336a4 100%); /* solid gradient = no seam */
+    clip-path:polygon(50% 0%, 0% 100%, 100% 100%);
+    display:grid;place-items:center;
+    box-shadow:0 10px 30px rgba(90,60,150,.35);
+  }
+  .tri-text{
+    width:72%;
+    font-size:12px; /* smaller so it never collides with edges */
+    line-height:1.15;
+    text-align:center;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#e9e1ff;
+    opacity:.95;
+    text-shadow:0 1px 0 rgba(0,0,0,.5);
+  }
+
   .prompt{display:flex;gap:10px}
   input[type="text"]{flex:1;background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:14px 14px;color:var(--fg);outline:none}
   input::placeholder{color:#8e8e8e}
@@ -37,18 +63,20 @@
   .hint{color:var(--muted);font-size:.9rem}
 
   /* Results */
-  .results{display:grid;gap:10px}
-  .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:12px}
+  .results{display:grid;gap:12px}
+  .row{
+    display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+    background:#0e0e0e;border:1px solid var(--border);border-radius:12px;padding:12px;
+  }
   .answer{font-weight:600}
-  .bar{height:8px;border-radius:999px;background:#1b1b1b;overflow:hidden}
-  .fill{height:100%;background:linear-gradient(90deg, #2ee6a2, #2ab386)}
+  .bar{height:8px;border-radius:999px;background:#1b1b1b;overflow:hidden;margin-top:8px}
+  .fill{height:100%;background:linear-gradient(90deg, #33cc99, #2ab386)}
   .pct{font-variant-numeric:tabular-nums;font-weight:800;opacity:.9}
-  .legend{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
-  .chip{border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#0e0e0e}
+
   .tone{display:flex;align-items:center;gap:8px}
   .tone select{background:#0e0e0e;color:var(--fg);border:1px solid var(--border);border-radius:10px;padding:8px}
 
-  /* subtle grow on shake */
+  /* subtle shake */
   .ball.shake{animation:shake .6s ease}
   @keyframes shake{
     0%{transform:translate(0,0) rotate(0)}
@@ -58,6 +86,10 @@
     80%{transform:translate(2px,-1px) rotate(1deg)}
     100%{transform:translate(0,0) rotate(0)}
   }
+
+  /* clean up: remove the feature blurbs that were causing visual “ghosts” */
+  .badges{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#0e0e0e;color:var(--muted);font-size:.9rem}
 </style>
 </head>
 <body>
@@ -93,18 +125,19 @@
       <div class="card">
         <div class="grid">
           <div class="prompt">
-            <input id="question" type="text" placeholder="Ask anything… (e.g., 'Should I start a YouTube channel?')" />
+            <input id="question" type="text" placeholder="Ask anything… (e.g., 'I live in Boston and want Italian')" />
             <button id="askBtn">Ask</button>
           </div>
-          <div class="hint">Tip: Try “I live in Boston and I’m thinking Italian food” to see how the narrative shifts. (Local recs scaffolded for later.)</div>
 
-          <div class="legend">
-            <span class="chip">Multiple outcomes that sum to 100%</span>
-            <span class="chip">Weighted by simple heuristics (upgrade-ready for API/LLM)</span>
-            <span class="chip">Tone ladder applied to the micro-narrative</span>
+          <!-- small, non-intrusive badges (replaces the big blurbs) -->
+          <div class="badges">
+            <span class="chip">Multi-outcomes sum to 100%</span>
+            <span class="chip">Heuristics now, API-ready</span>
+            <span class="chip">Tone ladder applied</span>
           </div>
 
           <div class="results" id="results"></div>
+          <div class="hint" id="localTip" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -112,11 +145,11 @@
 
 <script>
 /* =========================
-   Core knobs you’ll tweak
+   Core knobs
    ========================= */
-const DEFAULT_OUTCOME_COUNT = 3; // number of outcomes to show
-const MIN_PCT = 7;               // minimum % for any single outcome
-const USE_DIRICHLET = true;      // smoother splits; keep true
+const DEFAULT_OUTCOME_COUNT = 3;
+const MIN_PCT = 7;
+const USE_DIRICHLET = true;
 
 /* =========================
    Tone Ladder (scaffold)
@@ -137,13 +170,10 @@ const toneRenderers = {
 function chooseTone(question, explicit) {
   if (explicit && explicit !== 'auto') return explicit;
   const q = (question || '').toLowerCase();
-
-  // quick heuristic: detect emotional weight or “life decision” vibes
   const heavy = /(break up|divorce|death|grief|diagnos|fired|pregnan|addict|panic|abuse|unsafe)/.test(q);
   const life  = /(should i|move|quit|career|marry|have kid|college|sell|buy)/.test(q);
   const rpg   = /(dragon|goblin|quest|roll|dice|dungeon|campaign)/.test(q);
-  const alt   = /(what if|counterfactual|alternate|if x had)/.test(q);
-
+  const alt   = /(what if|counterfactual|alternate|if .* had)/.test(q);
   if (rpg) return 'gm';
   if (alt) return 'altHistory';
   if (heavy) return 'counselor';
@@ -154,7 +184,6 @@ function chooseTone(question, explicit) {
 /* =========================
    Outcome generator
    ========================= */
-// Basic template library you’ll expand/replace with LLM later
 const templateBuckets = {
   generic: [
     "Go for it",
@@ -164,10 +193,10 @@ const templateBuckets = {
     "Ask someone you trust first"
   ],
   dining: [
-    "Classic, reliable spot",
-    "Trendy pick with a vibe",
-    "Hidden neighborhood gem",
     "Budget-friendly comfort",
+    "Classic, reliable spot",
+    "Hidden neighborhood gem",
+    "Trendy pick with a vibe",
     "Make it at home tonight"
   ]
 };
@@ -175,12 +204,10 @@ const templateBuckets = {
 function pickTemplates(question, n) {
   const q = (question || '').toLowerCase();
   let pool = templateBuckets.generic;
-  if (/food|restaurant|dinner|lunch|eat|italian|sushi|tacos|pizza/.test(q)) {
+  if (/food|restaurant|dinner|lunch|eat|italian|sushi|tacos|pizza|thai|ramen|bbq|indian|greek/.test(q)) {
     pool = templateBuckets.dining;
   }
-  // sample without replacement
-  const copy = [...pool];
-  const out = [];
+  const copy = [...pool], out = [];
   for (let i=0; i<n && copy.length; i++){
     const idx = Math.floor(Math.random()*copy.length);
     out.push(copy.splice(idx,1)[0]);
@@ -188,36 +215,26 @@ function pickTemplates(question, n) {
   return out;
 }
 
-// Make N random parts that sum to 100, each >= MIN_PCT
 function splitPercentages(n, minEach=MIN_PCT) {
   const totalMin = n * minEach;
   if (totalMin > 100) {
-    // fallback: equal split if min constraints impossible
     const eq = Math.floor(100/n);
     const arr = Array(n).fill(eq);
     arr[0] += 100 - eq*n;
     return arr;
   }
-
   const remaining = 100 - totalMin;
-
   if (USE_DIRICHLET) {
-    // Dirichlet-like (gamma sampling)
-    const alpha = Array(n).fill(1.1); // slightly smooth
-    const gammas = alpha.map(a => -Math.log(Math.random())); // Exp(1) ~ Gamma(1,1)
+    const gammas = Array.from({length:n},()=> -Math.log(Math.random()));
     const sum = gammas.reduce((s,x)=>s+x,0) || 1;
     const shares = gammas.map(g => g/sum);
     let pcts = shares.map(s => Math.floor(s*remaining));
-    // fix rounding to hit remaining exactly
     let used = pcts.reduce((s,x)=>s+x,0);
     for (let i=0; i<remaining-used; i++) pcts[i%pcts.length]++;
-    // add minimums
     return pcts.map(v => v + minEach);
   } else {
-    // Simple random split
     const cuts = Array.from({length:n-1}, ()=>Math.random()).sort((a,b)=>a-b);
-    const parts = [];
-    let prev = 0;
+    const parts = []; let prev = 0;
     for (const c of cuts){ parts.push(c - prev); prev = c; }
     parts.push(1 - prev);
     let pcts = parts.map(p => Math.floor(p*remaining));
@@ -228,19 +245,14 @@ function splitPercentages(n, minEach=MIN_PCT) {
 }
 
 /* =========================
-   Lightweight intent parsing
-   & local recs scaffold
+   Lightweight local intent
    ========================= */
 function detectCityCuisine(question){
   const q = (question||'').toLowerCase();
-  // naive extracts (upgrade later w/ Places API)
-  const cityMatch = q.match(/\b(in|near|around)\s+([a-z\s]+)\b/);
-  const city = (q.includes('boston') ? 'Boston' : (cityMatch ? titleCase(cityMatch[2]) : null));
-  const cuisine = (q.match(/italian|sushi|thai|pizza|tacos|ramen|bbq|indian|greek|mediterranean/)||[])[0];
-  return { city, cuisine };
+  const city = (q.includes('boston') ? 'Boston' : null);
+  const cuisineMatch = q.match(/italian|sushi|thai|pizza|tacos|ramen|bbq|indian|greek|mediterranean/);
+  return { city, cuisine: cuisineMatch ? cuisineMatch[0] : null };
 }
-
-function titleCase(s){ return s ? s.replace(/\b\w/g, m => m.toUpperCase()) : s; }
 
 /* =========================
    Rendering
@@ -248,18 +260,14 @@ function titleCase(s){ return s ? s.replace(/\b\w/g, m => m.toUpperCase()) : s; 
 const elResults = document.getElementById('results');
 const elBall = document.getElementById('ball');
 const elBallText = document.getElementById('ballText');
+const elLocalTip = document.getElementById('localTip');
 
 function renderResults(question, toneKey) {
   elResults.innerHTML = '';
 
-  // 1) Outcomes + percentages
   const outcomes = pickTemplates(question, DEFAULT_OUTCOME_COUNT);
   const pcts = splitPercentages(outcomes.length);
-
-  // 2) Optional local rec nudge (no external calls yet)
   const { city, cuisine } = detectCityCuisine(question);
-
-  // 3) Tone
   const tone = toneRenderers[toneKey] ? toneKey : 'friend';
 
   outcomes
@@ -270,12 +278,12 @@ function renderResults(question, toneKey) {
 
       const left = document.createElement('div');
       const ans = document.createElement('div'); ans.className='answer';
-      const line = `${label}`;
-      ans.textContent = toneRenderers[tone](question, line);
+      ans.textContent = toneRenderers[tone](question, label);
 
       const bar = document.createElement('div'); bar.className='bar';
       const fill = document.createElement('div'); fill.className='fill'; fill.style.width = pct + '%';
       bar.appendChild(fill);
+
       left.appendChild(ans);
       left.appendChild(bar);
 
@@ -285,15 +293,13 @@ function renderResults(question, toneKey) {
       elResults.appendChild(row);
     });
 
-  // 4) Small narrative footer for local intent (placeholder content)
   if (city || cuisine){
-    const tip = document.createElement('div');
-    tip.className = 'hint';
-    tip.style.marginTop = '6px';
     const want = cuisine ? cuisine : 'good';
     const where = city ? `in ${city}` : 'near you';
-    tip.innerHTML = `🔜 Local picks scaffolded: “Find ${want} spots ${where}.” (We’ll wire Google Places/Yelp soon.)`;
-    elResults.appendChild(tip);
+    elLocalTip.style.display = 'block';
+    elLocalTip.textContent = `🔜 Local picks scaffolded: “Find ${want} spots ${where}.” (We’ll wire Google Places/Yelp soon.)`;
+  } else {
+    elLocalTip.style.display = 'none';
   }
 }
 
@@ -304,26 +310,20 @@ document.getElementById('askBtn').addEventListener('click', run);
 document.getElementById('question').addEventListener('keydown', e=>{
   if (e.key === 'Enter') run();
 });
-
 function run(){
   const q = document.getElementById('question').value.trim();
   const toneSel = document.getElementById('toneSelect').value;
   const tone = chooseTone(q, toneSel);
-
-  // shake
   elBall.classList.remove('shake'); void elBall.offsetWidth; elBall.classList.add('shake');
-
-  // update triangle text (stays generic per your idea)
   elBallText.textContent = 'See your fate below';
-
   renderResults(q, tone);
 }
-
-/* First paint */
 renderResults('', 'friend');
 </script>
 </body>
 </html>
+
+
 
 
 

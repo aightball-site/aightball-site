@@ -60,8 +60,9 @@ The user's question is: "${question}"
       })
     });
 
+    const status = resp.status;
+    const raw = await resp.text().catch(() => "");
     if (!resp.ok) {
-      const errText = await resp.text().catch(() => "");
       return {
         statusCode: 200,
         headers: cors,
@@ -69,25 +70,23 @@ The user's question is: "${question}"
           short: "62%",
           long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
           odds: 62,
-          error: `OpenAI error: ${resp.status} ${errText}`.slice(0, 500)
+          debug: { where: "openai", status, raw: raw.slice(0, 400) }
         })
       };
     }
 
-    const data = await resp.json();
+    let data;
+    try { data = JSON.parse(raw); } catch { data = null; }
+
     const text =
       data?.output_text ??
       (Array.isArray(data?.output)
-        ? data.output.map(it => (it?.content || [])
-            .map(c => c?.text || "")
-            .join("")).join("")
+        ? data.output.map(it => (it?.content || []).map(c => c?.text || "").join("")).join("")
         : (data?.choices?.[0]?.message?.content || ""));
 
-    // Parse model JSON
-    let parsed;
+    let parsed = null;
     try { parsed = JSON.parse(text); } catch {}
 
-    // Fallbacks / sanitization
     let odds = 50, short = "50%", long = "The outcome balances on a knife-edge; ready yourself to tip the scales with purpose.";
     if (parsed && typeof parsed === "object") {
       const n = Number(parsed.odds);
@@ -111,8 +110,10 @@ The user's question is: "${question}"
         short: "61%",
         long: "Conditions are favorable if you proceed with steady attention and tidy edges; small missteps could ripple larger than expected.",
         odds: 61,
-        error: String(err?.message || err).slice(0, 500)
+        debug: { where: "catch", message: String(err?.message || err) }
       })
     };
   }
 };
+
+

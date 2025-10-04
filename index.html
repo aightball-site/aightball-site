@@ -13,8 +13,8 @@
       --border: #333;
       --accent: #33cc99;
       --accent-hover: #2ab386;
-      --triW: 160px;   /* triangle total width */
-      --triH: 140px;   /* triangle height */
+      --triW: 160px;
+      --triH: 140px;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,7 +24,7 @@
       color: var(--fg);
       min-height: 100vh;
       display: grid;
-      grid-template-rows: auto auto 1fr auto; /* hero, demo, signup, footer */
+      grid-template-rows: auto auto 1fr auto;
       align-items: start;
     }
     .hero {
@@ -42,7 +42,6 @@
       -webkit-user-drag: none;
     }
 
-    /* Demo Card */
     .demo {
       margin: 0.5rem auto 0;
       padding: 1.5rem 1.25rem 2rem;
@@ -53,7 +52,6 @@
       box-shadow: 0 24px 50px rgba(0,0,0,.35);
     }
 
-    /* Mystical Eight Ball */
     .oracle-wrap {
       position: relative;
       display: grid;
@@ -63,7 +61,6 @@
       overflow: visible;
     }
 
-    /* Floating sparkly mist */
     .mist,
     .mist::before,
     .mist::after {
@@ -102,7 +99,7 @@
       overflow: hidden;
       transition: transform .2s cubic-bezier(.2,.8,.2,1);
     }
-    .eightball::before { /* sheen */
+    .eightball::before {
       content: "";
       position: absolute;
       top: 6%; left: 12%;
@@ -112,30 +109,26 @@
       transform: rotate(-12deg);
       pointer-events: none;
     }
-    .window {
-      position: relative;
-      width: 50%; height: 50%;
-      border-radius: 50%;
+    .window{
+      position: relative; width:50%; height:50%; border-radius:50%;
       background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
       box-shadow: inset 0 0 40px rgba(0,0,0,.9);
-      display: grid; place-items: center;
-      border: 2px solid #0f2a3a;
+      display:grid; place-items:center; border:2px solid #0f2a3a; overflow:hidden;
     }
-
-.window::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, transparent 70%, rgba(0,0,0,0.7) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
+    .window::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, transparent 70%, rgba(0,0,0,0.7) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
 
     .triangle {
       position: absolute;
       left: 50%;
-      top: 58%; /* slightly lower to look centered */
+      top: 58%;
       transform: translate(-50%, -50%);
       width: 0; height: 0;
       border-left: calc(var(--triW) / 2) solid transparent;
@@ -146,12 +139,12 @@
     .triangle .msg {
       position: absolute;
       left: 50%;
-      top: calc(-1 * var(--triH) * 0.72); /* pull text up into the triangle */
+      top: calc(-1 * var(--triH) * 0.72);
       transform: translateX(-50%);
       width: calc(var(--triW) * 0.8);
       text-align: center;
       font-weight: 800;
-      font-size: 1.05rem; /* bigger text inside the 8-ball */
+      font-size: 1.05rem;
       letter-spacing: 0.5px;
       color: #cde7ff;
       text-shadow: 0 1px 0 rgba(0,0,0,.5);
@@ -170,7 +163,47 @@
 
     .readout { text-align: center; margin: 0.5rem 0 0; line-height: 1.45; }
 
-    /* Signup (moved BELOW demo) */
+    /* NEW: Scrollable responses area */
+    .responses-wrap {
+      margin-top: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #121212;
+      max-height: 260px;     /* controls visible height */
+      overflow: auto;        /* scroll when content grows */
+      padding: 0.5rem;
+    }
+    .responses-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    @media (min-width: 680px){
+      .responses-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .persona-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
+      background: linear-gradient(180deg, #131313, #0f0f0f);
+    }
+    .persona-card h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+      letter-spacing: 0.4px;
+    }
+    .persona-card .odds {
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+    .persona-card p {
+      margin: 0;
+      color: #e3e3e3;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
     .signup {
       display: flex;
       gap: 0.5rem;
@@ -213,7 +246,6 @@
 
     .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-    /* Shake animation */
     @keyframes wobble {
       0%{ transform: rotate(0deg) translateX(0); }
       20%{ transform: rotate(3deg) translateX(6px); }
@@ -223,9 +255,7 @@
       100%{ transform: rotate(0deg) translateX(0); }
     }
     .shake { animation: wobble .6s ease-in-out; }
-      .window{ position: relative; width:50%; height:50%; border-radius:50%; background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%); box-shadow: inset 0 0 40px rgba(0,0,0,.9); display:grid; place-items:center; border:2px solid #0f2a3a; overflow:hidden; }
 
-    /* Inner mist inside the circular window */
     .window::after{
       content:"";
       position:absolute;
@@ -242,8 +272,6 @@
       border-radius: 50%;
       clip-path: circle(50% at 50% 50%);
     }
-
-    /* Mist inside the triangle only (masked with clip-path) */
     .triangle::after{
       content:"";
       position:absolute;
@@ -260,23 +288,20 @@
       animation: swirl 18s ease-in-out infinite reverse;
       pointer-events:none;
     }
-
     @keyframes swirl{
       0%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
       50%{ transform: translateX(-50%) rotate(5deg); opacity:.85; }
       100%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
     }
-
   </style>
 </head>
 <body>
-  <!-- HERO: Big centered logo only -->
+  <!-- HERO -->
   <section class="hero" aria-label="AIght Ball">
-    <!-- IMPORTANT: case-sensitive path. Update to match your actual file name. -->
     <img src="Images/Logo.jpg" alt="AIght Ball logo" />
   </section>
 
-  <!-- Demo with Mystical 8-Ball UI -->
+  <!-- DEMO -->
   <section class="demo" role="region" aria-label="AIght Ball demo">
     <div class="oracle-wrap">
       <div class="mist"></div>
@@ -299,9 +324,16 @@
 
     <p id="demo-odds" class="readout">🎲 Odds: --%</p>
     <p id="demo-text" class="readout">✨ Waiting for your question…</p>
+
+    <!-- NEW: Scrollable multi-persona responses -->
+    <div class="responses-wrap" aria-live="polite">
+      <div id="responses" class="responses-grid">
+        <!-- persona cards inject here -->
+      </div>
+    </div>
   </section>
 
-  <!-- Early access signup (now below the fun) -->
+  <!-- Signup -->
   <form class="signup" name="signup" method="POST" data-netlify="true">
     <input type="email" name="email" placeholder="Enter your email for early access" required />
     <button type="submit">Notify Me</button>
@@ -321,6 +353,14 @@
   const inputEl = document.getElementById('user-question');
   const askBtn = document.querySelector('#question-form button[type="submit"]');
   const shakeBtn = document.getElementById('shake-btn');
+  const responsesEl = document.getElementById('responses');
+
+  const personas = [
+    { id: 'bold',    label: 'Bold' },
+    { id: 'cautious',label: 'Cautious' },
+    { id: 'neutral', label: 'Neutral / Practical' },
+    { id: 'mystic',  label: 'Mystic' }
+  ];
 
   function shakeOrb() {
     orb.classList.remove('shake');
@@ -335,57 +375,155 @@
       orbMsg.textContent = "…";
       oddsOut.textContent = "🎲 Odds: —";
       textOut.textContent = "✨ Consulting the orb…";
+      // clear persona cards placeholder
+      renderPersonaSkeletons();
     }
   }
 
-  const fallback = () => ({
-    short: "62%",
-    long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
-    odds: 62
-  });
+  function fallback() {
+    return {
+      short: "62%",
+      long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
+      odds: 62
+    };
+  }
 
-  async function askAightBall(question) {
-    setLoading(true);
-    let timer;
-    try {
-      const controller = new AbortController();
-      timer = setTimeout(() => controller.abort(), 20000);
+  // NEW: tiny “tone wrapper” for safe fallback if API ignores persona
+  function wrapByPersona(baseLong, personaId, question){
+    const q = (question || '').toLowerCase();
+    const tag =
+      personaId === 'bold'    ? "Play it strong: " :
+      personaId === 'cautious'? "Proceed, but hedge: " :
+      personaId === 'neutral' ? "Practical take: " :
+      /* mystic */              "The currents whisper: ";
 
+    // a couple micro-specifics to vary endings without needing backend changes
+    let finisher = " Keep your energy and boundaries clear.";
+    if (q.includes('dinner') || q.includes('food') || q.includes('eat')){
+      finisher = " Try one concrete step tonight (pick a dish, set a time, go).";
+    } else if (q.includes('relationship') || q.includes('date') || q.includes('partner')){
+      finisher = " Name a need, ask a question, and give space for a real answer.";
+    } else if (q.includes('job') || q.includes('career') || q.includes('work')){
+      finisher = " Make one measurable move in the next 48 hours.";
+    }
+    return tag + baseLong.replace(/\s+$/,'') + finisher;
+  }
+
+  function createCard({label, odds, long}) {
+    const div = document.createElement('div');
+    div.className = 'persona-card';
+    div.innerHTML = `
+      <h4>${label}</h4>
+      <div class="odds">Odds: ${Number.isFinite(odds) ? odds + '%' : '--'}</div>
+      <p>${long}</p>
+    `;
+    return div;
+  }
+
+  function renderPersonaSkeletons(){
+    responsesEl.innerHTML = '';
+    personas.forEach(p=>{
+      const skeleton = document.createElement('div');
+      skeleton.className = 'persona-card';
+      skeleton.innerHTML = `
+        <h4>${p.label}</h4>
+        <div class="odds">Odds: …</div>
+        <p>Thinking…</p>
+      `;
+      responsesEl.appendChild(skeleton);
+    });
+  }
+
+  async function fetchReading(question, personaId){
+    // Try persona-aware first. If backend ignores 'persona', we still get a normal reading.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try{
       const resp = await fetch("/api/reading", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(personaId ? { question, persona: personaId } : { question }),
         signal: controller.signal
       });
+      const data = await resp.json().catch(()=>null);
+      return data || null;
+    } catch(e){
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
-      const data = await resp.json().catch(() => null);
+  async function askAightBall(question) {
+    setLoading(true);
+    try {
+      // Base call (keeps existing top readouts working exactly as before)
+      const baseData = await fetchReading(question, null);
+      const f = fallback();
 
-      const odds = Number.isFinite(Number(data?.odds))
-        ? Math.max(0, Math.min(100, Math.round(data.odds)))
+      const odds = Number.isFinite(Number(baseData?.odds))
+        ? Math.max(0, Math.min(100, Math.round(baseData.odds)))
         : 50;
 
-      const long = (typeof data?.long === "string" && data.long.trim())
-        ? data.long.trim()
-        : fallback().long;
+      const long = (typeof baseData?.long === "string" && baseData.long.trim())
+        ? baseData.long.trim()
+        : f.long;
 
-      const short = /^\d{1,3}%$/.test(String(data?.short))
-        ? String(data.short)
+      const short = /^\d{1,3}%$/.test(String(baseData?.short))
+        ? String(baseData.short)
         : `${odds}%`;
 
       oddsOut.textContent = `🎲 Odds: ${odds}%`;
-      // If the function returned debug info, append it faintly so you can see issues during testing
-      textOut.textContent = `✨ ${long}` + (data?.debug ? ` (debug: ${JSON.stringify(data.debug)})` : "");
+      textOut.textContent = `✨ ${long}` + (baseData?.debug ? ` (debug: ${JSON.stringify(baseData.debug)})` : "");
       orbMsg.textContent = short;
       shakeOrb();
+
+      // Persona calls in parallel; if any fail, synthesize from base
+      const personaPromises = personas.map(async (p) => {
+        const d = await fetchReading(question, p.id);
+        const pOdds = Number.isFinite(Number(d?.odds)) ? Math.max(0, Math.min(100, Math.round(d.odds))) : odds;
+        const pLong = (typeof d?.long === "string" && d.long.trim())
+            ? d.long.trim()
+            : wrapByPersona(long, p.id, question);
+
+        return { label: p.label, odds: pOdds, long: pLong };
+      });
+
+      const results = await Promise.allSettled(personaPromises);
+
+      responsesEl.innerHTML = '';
+      results.forEach((res, idx) => {
+        const label = personas[idx].label;
+        if (res.status === 'fulfilled' && res.value){
+          responsesEl.appendChild(createCard(res.value));
+        } else {
+          // ultra-safe fallback
+          responsesEl.appendChild(createCard({
+            label,
+            odds,
+            long: wrapByPersona(long, personas[idx].id, question)
+          }));
+        }
+      });
+
     } catch (e) {
       const f = fallback();
       oddsOut.textContent = `🎲 Odds: ${f.odds}%`;
       textOut.textContent = `✨ ${f.long}`;
       orbMsg.textContent = f.short;
       shakeOrb();
+
+      // basic fallback persona cards
+      responsesEl.innerHTML = '';
+      personas.forEach(p=>{
+        responsesEl.appendChild(createCard({
+          label: p.label,
+          odds: f.odds,
+          long: wrapByPersona(f.long, p.id, question)
+        }));
+      });
       console.warn("AIght Ball fallback (timeout/network):", e);
     } finally {
-      clearTimeout(timer);
       setLoading(false);
     }
   }
@@ -403,6 +541,8 @@
 </script>
 </body>
 </html>
+
+
 
 
 

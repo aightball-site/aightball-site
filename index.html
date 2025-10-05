@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AIght Ball – Coming Soon</title>
   <style>
@@ -13,19 +13,29 @@
       --neut:#7aa0b4; --neut-ink:#07131a;
       --myst:#a78bfa; --myst-ink:#1a0f2b;
     }
-    *{ box-sizing:border-box; } body{
+    *{ box-sizing:border-box; }
+    body{
       margin:0; font-family:Arial,Helvetica,sans-serif;
       background:radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
       color:var(--fg); min-height:100vh; display:grid;
       grid-template-rows:auto auto 1fr auto; align-items:start;
     }
+
+    /* Hero */
     .hero{ display:grid; place-items:center; padding:2.25rem 1.25rem 0.75rem; }
-    .hero img{ width:min(70vw,500px); max-height:45vh; object-fit:contain; border-radius:24px;
-      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none; }
-    .demo{ margin:0.5rem auto 0; padding:1.5rem 1.25rem 2rem; border:1px solid var(--border);
+    .hero img{
+      width:min(70vw,500px); max-height:45vh; object-fit:contain; border-radius:24px;
+      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none;
+    }
+
+    /* Demo container */
+    .demo{
+      margin:0.5rem auto 0; padding:1.5rem 1.25rem 2rem; border:1px solid var(--border);
       border-radius:20px; width:min(92vw, 720px); background:linear-gradient(180deg,#121212,var(--card));
       box-shadow:0 24px 50px rgba(0,0,0,.35);
     }
+
+    /* Orb */
     .oracle-wrap{ position:relative; display:grid; place-items:center; margin-bottom:1rem; padding:1rem 0; overflow:visible; }
     .mist, .mist::before, .mist::after{
       content:""; position:absolute; pointer-events:none; width:520px; height:520px; border-radius:50%; filter:blur(26px);
@@ -39,6 +49,7 @@
     .mist::before{ top:-30px; left:-80px; animation-duration:22s; animation-direction:reverse; }
     .mist::after{ top:10px; left:80px; animation-duration:26s; opacity:.5; }
     @keyframes drift{ 0%{transform:translate(-50%,0) rotate(0);opacity:.55}50%{transform:translate(-48%,-8px) rotate(6deg);opacity:.8}100%{transform:translate(-50%,0) rotate(0);opacity:.55}}
+
     .eightball{
       position:relative; width:min(68vw,360px); height:min(68vw,360px); border-radius:50%;
       background:radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
@@ -68,9 +79,32 @@
       color:#cde7ff; text-shadow:0 1px 0 rgba(0,0,0,.5); line-height:1.2; margin:0 auto;
     }
 
+    /* Ask row */
     .qa{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0 .25rem; }
     .helper{ color:var(--muted); margin:.25rem 0 .75rem; text-align:center; }
-    .readout{ text-align:center; margin:.5rem 0 0; line-height:1.45; }
+
+    /* Main reading hero card */
+    .main-card{
+      border:1px solid rgba(51,204,153,.45);
+      background:linear-gradient(180deg, rgba(51,204,153,.08), #0f1312);
+      border-radius:16px;
+      padding:1rem 1rem 1.1rem;
+      box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
+      margin:0 auto 0.75rem;
+    }
+    .main-header{
+      display:flex; align-items:center; gap:.75rem; margin-bottom:.4rem;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:.35rem; font-weight:700; padding:.15rem .6rem; border-radius:999px;
+      background:var(--accent); color:#04110d; font-size:.82rem;
+    }
+    .main-odds{
+      margin-left:auto; font-weight:900; font-size:1.15rem; letter-spacing:.4px;
+    }
+    .main-body{
+      line-height:1.5; font-size:1.02rem; color:#e8e8e8;
+    }
 
     /* Scrollable responses */
     .responses-wrap{ margin-top:.75rem; border:1px solid var(--border); border-radius:14px; background:#121212; max-height:260px; overflow:auto; padding:.5rem; }
@@ -85,10 +119,7 @@
     }
     .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
     .persona-card h4{ margin:0 0 .35rem; font-size:.95rem; letter-spacing:.4px; display:flex; align-items:center; gap:.5rem; }
-    .persona-card .pill{
-      display:inline-flex; align-items:center; gap:.35rem; font-weight:700; padding:.15rem .5rem; border-radius:999px;
-      color:#04110d; background:var(--accent); font-size:.8rem;
-    }
+    .persona-card .pill{ background:var(--accent); color:#04110d; }
     .persona-card .odds{ font-weight:700; margin:.35rem 0 .4rem; }
     .persona-card p{ margin:0; color:#e3e3e3; line-height:1.45; white-space:pre-wrap; }
 
@@ -126,7 +157,15 @@
       padding:.9rem 1.2rem; border:none; border-radius:12px; background:var(--accent); color:#02120d; font-weight:700; cursor:pointer;
       transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
     }
-    button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
+    button:hover{ background:var(--accent-hover); }
+    button:active{ transform:translateY(1px); }
+
+    /* Signup centered */
+    .signup{
+      display:flex; justify-content:center; align-items:center; gap:.6rem;
+      margin:1.25rem auto 0; width:min(92vw,720px);
+    }
+
     footer{ margin:1.25rem 0 1.5rem; text-align:center; color:#8a8a8a; font-size:.95rem; }
     a{ color:var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
     .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -142,7 +181,7 @@
       content:""; position:absolute; inset:-99%; opacity:.05;
       background:
         radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
-        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.10), transparent 60%),
+        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.20), transparent 60%),
         radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
       filter:blur(18px) saturate(1.05); mix-blend-mode:screen; animation:swirl 22s ease-in-out infinite; pointer-events:none; border-radius:50%;
       clip-path:circle(50% at 50% 50%);
@@ -158,7 +197,10 @@
     @keyframes swirl{ 0%{transform:translateX(-50%) rotate(0);opacity:.6}50%{transform:translateX(-50%) rotate(5deg);opacity:.85}100%{transform:translateX(-50%) rotate(0);opacity:.6} }
 
     /* outcome border tints */
-    .demo.tint-good{ border-color:#2ea86b; } .demo.tint-mixed{ border-color:#bda32e; } .demo.tint-risky{ border-color:#c24d4d; }
+    .demo.tint-good{ border-color:#2ea86b; }
+    .demo.tint-mixed{ border-color:#bda32e; }
+    .demo.tint-risky{ border-color:#c24d4d; }
+
     .regen-hint{ font-size:.78rem; color:var(--muted); margin-top:.35rem; }
   </style>
 </head>
@@ -182,15 +224,21 @@
     </div>
 
     <form id="question-form" class="qa" autocomplete="off">
-      <label class="sr-only" for="user-question">Ask a yes/no question</label>
-      <input id="user-question" type="text" name="question" placeholder="Ask a yes/no question…" maxlength="140"/>
-      <button type="submit" aria-label="Ask the AIght Ball">Ask</button>
+      <label class="sr-only" for="user-question">Ask a question</label>
+      <input id="user-question" type="text" name="question" placeholder="Ask anything—decisions, dilemmas, ideas…" maxlength="200"/>
+      <button type="submit" aria-label="Ask AIght Ball">Ask</button>
       <button type="button" id="shake-btn" aria-label="Shake the ball">Shake It</button>
     </form>
     <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
 
-    <p id="demo-odds" class="readout">🎲 Odds: --%</p>
-    <p id="demo-text" class="readout">✨ Waiting for your question…</p>
+    <!-- Prominent main reading -->
+    <div id="main-card" class="main-card" role="status" aria-live="polite">
+      <div class="main-header">
+        <span class="pill pill--primary">AIght Ball</span>
+        <div id="demo-odds" class="main-odds">🎲 Odds: --%</div>
+      </div>
+      <div id="demo-text" class="main-body">✨ Waiting for your question…</div>
+    </div>
 
     <!-- Scrollable multi-persona responses -->
     <div class="responses-wrap" aria-live="polite">
@@ -198,7 +246,7 @@
     </div>
   </section>
 
-  <!-- Signup -->
+  <!-- Signup (centered) -->
   <form class="signup" name="signup" method="POST" data-netlify="true">
     <input type="email" name="email" placeholder="Enter your email for early access" required/>
     <button type="submit">Notify Me</button>
@@ -222,10 +270,7 @@
   const responsesEl = document.getElementById('responses');
   const demoWrap = document.getElementById('demo');
 
-  /* ================== PERSONA CONFIGS ==================
-     Compact identity blocks (no big example scripts).
-     The backend can use these to compose fresh narratives.
-  ====================================================== */
+  /* ================== PERSONAS ================== */
   const PERSONAS = [
     {
       id:'bold', label:'Bold', color:'var(--bold)',
@@ -379,20 +424,14 @@
 
   /* ============ BACKEND BRIDGE (enhanced) ============ */
   function buildPersonaPrompt(question, odds, topic, persona){
-    // This gets sent for server-side composition. Keep it concise.
     return {
       mode: 'persona_narrative_v1',
       instruction: 'Write a distinct 4–6 sentence micro-story outcome for this question. Use the persona’s heuristics and voice; do not write generic advice. Start concrete, end with a crisp stop. Avoid repeating stock phrases.',
-      question,
-      odds,
-      topic,
+      question, odds, topic,
       persona: {
-        id: persona.id,
-        label: persona.label,
-        priorities: persona.priorities,
-        avoids: persona.avoids,
-        voice: persona.voice,
-        heuristics: persona.heuristics
+        id: persona.id, label: persona.label,
+        priorities: persona.priorities, avoids: persona.avoids,
+        voice: persona.voice, heuristics: persona.heuristics
       },
       guidance: {
         timebox: pickTimebox(odds),
@@ -422,15 +461,12 @@
   }
 
   async function fetchBase(question){
-    // Base odds/short/long. Compatible with your existing endpoint.
     return await fetchReading({ question });
   }
 
   async function fetchPersonaNarrative(question, odds, topic, persona){
-    // Progressive enhancement: backend may (or may not) honor `controls`.
     const controls = buildPersonaPrompt(question, odds, topic, persona);
     const res = await fetchReading({ question, persona: persona.id, controls });
-    // Expecting res.narrative or res.long; otherwise return null for fallback.
     const txt = typeof res?.narrative === 'string' && res.narrative.trim()
       ? res.narrative.trim()
       : (typeof res?.long === 'string' && res.long.trim() ? res.long.trim() : null);
@@ -488,7 +524,6 @@
     const shareMap = { bold:shares.bold, cautious:shares.cautious, neutral:shares.neutral, mystic:shares.mystic };
 
     PERSONAS.forEach(p=>{
-      // Skeleton placeholder inserted first
       const placeholder = document.createElement('div');
       placeholder.className = `persona-card skeleton ${cardClass(p.id)}`;
       placeholder.innerHTML = `
@@ -498,7 +533,6 @@
       `;
       responsesEl.appendChild(placeholder);
 
-      // Fetch narrative (or synth fallback)
       (async()=>{
         let narrative = await fetchPersonaNarrative(question, odds, topic, p);
         if(!narrative) narrative = synthesizeNarrative(p.id, odds, topic);
@@ -509,7 +543,6 @@
           odds: shareMap[p.id],
           long: narrative,
           onClick: async ()=>{
-            // regenerate only this voice
             const fresh = await fetchPersonaNarrative(question, odds, topic, p) || synthesizeNarrative(p.id, odds, topic);
             card.querySelector('p').textContent = fresh;
           }
@@ -529,7 +562,6 @@
         : 50;
       const topic = detectTopic(question);
 
-      // Overall line (kept local so the “voice chorus” feels coherent)
       const overall = overallRuling(odds, topic);
       const short = /^\d{1,3}%$/.test(String(baseData?.short)) ? String(baseData.short) : `${odds}%`;
 
@@ -539,7 +571,6 @@
       shakeOrb();
       tintBorder(odds);
 
-      // Persona narratives (server-enhanced, client-fallback)
       renderAllPersonas(question, odds, topic);
     }catch(e){
       const f = fallback();
@@ -577,6 +608,7 @@
 </script>
 </body>
 </html>
+
 
 
 

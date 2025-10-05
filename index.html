@@ -163,14 +163,14 @@
 
     .readout { text-align: center; margin: 0.5rem 0 0; line-height: 1.45; }
 
-    /* NEW: Scrollable responses area */
+    /* Scrollable responses area */
     .responses-wrap {
       margin-top: 0.75rem;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: #121212;
-      max-height: 260px;     /* controls visible height */
-      overflow: auto;        /* scroll when content grows */
+      max-height: 260px;
+      overflow: auto;
       padding: 0.5rem;
     }
     .responses-grid {
@@ -293,6 +293,11 @@
       50%{ transform: translateX(-50%) rotate(5deg); opacity:.85; }
       100%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
     }
+
+    /* NEW: outcome border tints (optional) */
+    .demo.tint-good   { border-color: #2ea86b; }
+    .demo.tint-mixed  { border-color: #bda32e; }
+    .demo.tint-risky  { border-color: #c24d4d; }
   </style>
 </head>
 <body>
@@ -302,7 +307,7 @@
   </section>
 
   <!-- DEMO -->
-  <section class="demo" role="region" aria-label="AIght Ball demo">
+  <section id="demo" class="demo" role="region" aria-label="AIght Ball demo">
     <div class="oracle-wrap">
       <div class="mist"></div>
       <div id="orb" class="eightball" aria-hidden="true">
@@ -325,7 +330,7 @@
     <p id="demo-odds" class="readout">🎲 Odds: --%</p>
     <p id="demo-text" class="readout">✨ Waiting for your question…</p>
 
-    <!-- NEW: Scrollable multi-persona responses -->
+    <!-- Scrollable multi-persona responses -->
     <div class="responses-wrap" aria-live="polite">
       <div id="responses" class="responses-grid">
         <!-- persona cards inject here -->
@@ -354,6 +359,7 @@
   const askBtn = document.querySelector('#question-form button[type="submit"]');
   const shakeBtn = document.getElementById('shake-btn');
   const responsesEl = document.getElementById('responses');
+  const demoWrap = document.getElementById('demo'); // NEW
 
   const personas = [
     { id: 'bold',    label: 'Bold' },
@@ -375,7 +381,6 @@
       orbMsg.textContent = "…";
       oddsOut.textContent = "🎲 Odds: —";
       textOut.textContent = "✨ Consulting the orb…";
-      // clear persona cards placeholder
       renderPersonaSkeletons();
     }
   }
@@ -388,16 +393,14 @@
     };
   }
 
-  // NEW: tiny “tone wrapper” for safe fallback if API ignores persona
+  // legacy persona wrapper (kept; unused by new flow but safe to keep)
   function wrapByPersona(baseLong, personaId, question){
     const q = (question || '').toLowerCase();
     const tag =
       personaId === 'bold'    ? "Play it strong: " :
       personaId === 'cautious'? "Proceed, but hedge: " :
       personaId === 'neutral' ? "Practical take: " :
-      /* mystic */              "The currents whisper: ";
-
-    // a couple micro-specifics to vary endings without needing backend changes
+                                "The currents whisper: ";
     let finisher = " Keep your energy and boundaries clear.";
     if (q.includes('dinner') || q.includes('food') || q.includes('eat')){
       finisher = " Try one concrete step tonight (pick a dish, set a time, go).";
@@ -435,7 +438,6 @@
   }
 
   async function fetchReading(question, personaId){
-    // Try persona-aware first. If backend ignores 'persona', we still get a normal reading.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
     try{
@@ -454,10 +456,77 @@
     }
   }
 
+  /* -------- NEW HELPERS: split % to personas + persona voice + border tint -------- */
+
+  function clamp(n, a=0, b=1){ return Math.min(b, Math.max(a, n)); }
+
+  // Turn a single 0–100 positive odds into 4 persona buckets summing to 100
+  function splitPersonaShares(posOdds){
+    const p = clamp(posOdds/100);          // 0..1
+    const amb = 1 - Math.abs(p - 0.5)*2;   // 1 at 50/50, 0 at extremes
+    let wBold    = 0.55*p + 0.10*amb;
+    let wCaut    = 0.55*(1-p) + 0.10*amb;
+    let wNeutral = 0.80*amb;
+    let wMystic  = Math.max(0, 1 - (wBold+wCaut+wNeutral));
+
+    const S = wBold + wCaut + wNeutral + wMystic || 1;
+    let arr = [wBold/S, wCaut/S, wNeutral/S, wMystic/S].map(x => Math.round(x*100));
+    let diff = 100 - arr.reduce((a,b)=>a+b,0);
+    while (diff !== 0){
+      const idx = diff > 0 ? arr.indexOf(Math.max(...arr)) : arr.indexOf(Math.min(...arr));
+      arr[idx] += diff > 0 ? 1 : -1;
+      diff = 100 - arr.reduce((a,b)=>a+b,0);
+    }
+    return { bold: arr[0], cautious: arr[1], neutral: arr[2], mystic: arr[3] };
+  }
+
+  function personaWrite(personaId, posOdds, question){
+    const q = (question||'').toLowerCase();
+    const tip =
+      q.includes('dinner')||q.includes('food')||q.includes('eat') ? " Pick a dish and time—commit." :
+      (q.includes('relationship')||q.includes('date')||q.includes('partner')) ? " Say one need aloud and invite an honest reply." :
+      (q.includes('job')||q.includes('career')||q.includes('work')) ? " Make one measurable move inside 48 hours." :
+      " Keep your energy and boundaries clear.";
+    const p = posOdds;
+    const positive = p >= 60;
+    const negative = p <= 40;
+
+    const voices = {
+      bold:     { pos:"Green lights. Act now, don’t over-optimize—ship it.",
+                  neg:"Odds are rough. If you go, go loud—own the risk and the outcome.",
+                  mid:"Momentum is there if you create it—choose a line and punch through." },
+      cautious: { pos:"Good signs, but protect the downside—set limits and a stop-loss.",
+                  neg:"This reads red. Pause, gather facts, and re-attempt with safeguards.",
+                  mid:"Mixed read. Test small, observe, then scale or stand down." },
+      neutral:  { pos:"Favorable, with practical upside—write the next two steps.",
+                  neg:"Not favorable—what must be true to proceed? If you can’t meet it, pass.",
+                  mid:"Fifty-fifty—define success criteria and a clear no-go line." },
+      mystic:   { pos:"The current lifts you—follow the quiet ‘yes’ and keep your grip light.",
+                  neg:"Turbid waters—sit still until the silt settles; the path will show.",
+                  mid:"Two tides meet here—listen for the smaller signal underneath the noise." }
+    };
+
+    const bundle = voices[personaId];
+    const line = positive ? bundle.pos : negative ? bundle.neg : bundle.mid;
+    const tag =
+      personaId==='bold'    ? "Bold — " :
+      personaId==='cautious'? "Cautious — " :
+      personaId==='neutral' ? "Practical — " : "Mystic — ";
+    return tag + line + tip;
+  }
+
+  function tintBorder(posOdds){
+    demoWrap.classList.remove('tint-good','tint-mixed','tint-risky');
+    if (posOdds >= 60) demoWrap.classList.add('tint-good');
+    else if (posOdds <= 40) demoWrap.classList.add('tint-risky');
+    else demoWrap.classList.add('tint-mixed');
+  }
+
+  /* ---------------------------- MAIN ACTION ---------------------------- */
+
   async function askAightBall(question) {
     setLoading(true);
     try {
-      // Base call (keeps existing top readouts working exactly as before)
       const baseData = await fetchReading(question, null);
       const f = fallback();
 
@@ -478,32 +547,22 @@
       orbMsg.textContent = short;
       shakeOrb();
 
-      // Persona calls in parallel; if any fail, synthesize from base
-      const personaPromises = personas.map(async (p) => {
-        const d = await fetchReading(question, p.id);
-        const pOdds = Number.isFinite(Number(d?.odds)) ? Math.max(0, Math.min(100, Math.round(d.odds))) : odds;
-        const pLong = (typeof d?.long === "string" && d.long.trim())
-            ? d.long.trim()
-            : wrapByPersona(long, p.id, question);
-
-        return { label: p.label, odds: pOdds, long: pLong };
-      });
-
-      const results = await Promise.allSettled(personaPromises);
+      // NEW: deterministic split into persona shares (sum = 100), persona voice text, border tint
+      const shares = splitPersonaShares(odds);
+      tintBorder(odds);
 
       responsesEl.innerHTML = '';
-      results.forEach((res, idx) => {
-        const label = personas[idx].label;
-        if (res.status === 'fulfilled' && res.value){
-          responsesEl.appendChild(createCard(res.value));
-        } else {
-          // ultra-safe fallback
-          responsesEl.appendChild(createCard({
-            label,
-            odds,
-            long: wrapByPersona(long, personas[idx].id, question)
-          }));
-        }
+      [
+        { id:'bold',    label:'Bold',               pct: shares.bold    },
+        { id:'cautious',label:'Cautious',           pct: shares.cautious},
+        { id:'neutral', label:'Neutral / Practical',pct: shares.neutral },
+        { id:'mystic',  label:'Mystic',             pct: shares.mystic  }
+      ].forEach(row=>{
+        responsesEl.appendChild(createCard({
+          label: row.label,
+          odds: row.pct,
+          long: personaWrite(row.id, odds, question)
+        }));
       });
 
     } catch (e) {
@@ -513,7 +572,6 @@
       orbMsg.textContent = f.short;
       shakeOrb();
 
-      // basic fallback persona cards
       responsesEl.innerHTML = '';
       personas.forEach(p=>{
         responsesEl.appendChild(createCard({
@@ -541,6 +599,7 @@
 </script>
 </body>
 </html>
+
 
 
 

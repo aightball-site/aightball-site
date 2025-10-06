@@ -95,9 +95,9 @@
       cursor:pointer;
     }
     .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
-    .persona-card h4{ margin:0 0 .35rem; font-size:.95rem; letter-spacing:.4px; display:flex; align-items:center; gap:.5rem; }
+    .persona-card h4{ margin:0 0 .35rem; font-size:.95rem; letter-spacing:.4px; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
     .persona-card .pill{ display:inline-flex; align-items:center; gap:.35rem; font-weight:700; padding:.15rem .6rem; border-radius:999px; background:var(--accent); color:#04110d; font-size:.82rem; }
-    .persona-card .odds{ font-weight:700; margin:.3rem 0 .45rem; color:#cfcfcf;}
+    .persona-card .pill--muted{ background:#1a1a1a; color:#cfcfcf; outline:1px solid var(--border); }
     .persona-card p{ margin:0; color:#e3e3e3; line-height:1.45; white-space:pre-wrap; }
 
     .card--bold{ background:linear-gradient(180deg, rgba(45,212,191,.10), #0e1716); border-color:rgba(45,212,191,.35); }
@@ -116,7 +116,7 @@
     .card--myst h4{ color:var(--myst); }
     .card--myst .pill{ background:var(--myst); color:var(--myst-ink); }
 
-    /* Skeleton state */
+    /* Skeleton */
     .skeleton{ position:relative; overflow:hidden; }
     .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
     .skeleton .line.wide{ width:92%; } .skeleton .line.med{ width:75%; } .skeleton .line.short{ width:55%; }
@@ -130,7 +130,7 @@
       padding:.85rem .9rem; border:none; border-radius:10px; min-width:280px; background:#1a1a1a; color:#fff; outline:1px solid var(--border);
     }
     button{
-      padding:.9rem 1.2rem; border:none; border-radius:12px; background:var(--accent); color:#02120d; font-weight:700; cursor:pointer;
+      padding:.9rem 1.2rem; border:none; border-radius:12px; background:var(--accent); color:#02110d; font-weight:700; cursor:pointer;
       transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
     }
     button:hover{ background:var(--accent-hover); }
@@ -229,19 +229,17 @@
 
   /* ================== PERSONAS (stance + style) ================== */
   const PERSONAS = [
-    { id:'bold',     label:'Bold',     color:'var(--bold)',  stance:'advocate', lexicon:['ship','push','cut','send','state','move'], bans:['maybe','perhaps','consider'], minLen:70, maxLen:150 },
-    { id:'cautious', label:'Cautious', color:'var(--caut)',  stance:'contain',  lexicon:['cap','limit','stage','buffer','guard','delay'], bans:['slam','all-in'], minLen:80, maxLen:170 },
-    { id:'neutral',  label:'Neutral / Practical', color:'var(--neut)', stance:'optimize', lexicon:['sort','log','batch','scope','schedule','track'], bans:['vibes','destiny'], minLen:70, maxLen:160 },
-    { id:'mystic',   label:'Mystic',  color:'var(--myst)',  stance:'timing',   lexicon:['tide','hush','glimmer','signal','quiet','align'], bans:['KPI','OKR'], minLen:75, maxLen:170 },
+    { id:'bold',     label:'Bold',     color:'var(--bold)',  stance:'advocate', lexicon:['ship','push','cut','send','state','move'], bans:['maybe','perhaps','consider'], minLen:60, maxLen:160 },
+    { id:'cautious', label:'Cautious', color:'var(--caut)',  stance:'contain',  lexicon:['cap','limit','stage','buffer','guard','delay'], bans:['slam','all-in'], minLen:60, maxLen:170 },
+    { id:'neutral',  label:'Neutral / Practical', color:'var(--neut)', stance:'optimize', lexicon:['sort','log','batch','scope','schedule','track'], bans:['vibes','destiny'], minLen:60, maxLen:160 },
+    { id:'mystic',   label:'Mystic',  color:'var(--myst)',  stance:'timing',   lexicon:['tide','hush','glimmer','signal','quiet','align'], bans:['KPI','OKR'], minLen:60, maxLen:170 },
   ];
 
   /* ================== UTILITIES ================== */
   function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
   function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
-  function seededHash(str){
-    let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0;
-  }
-  function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
+  function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+  function nowBucket(minutes=120){ return Math.floor(Date.now()/1000/60/minutes); }
 
   function renderPersonaSkeletons(){
     responsesEl.innerHTML = '';
@@ -249,7 +247,7 @@
       const card = document.createElement('div');
       card.className = `persona-card skeleton ${cardClass(p.id)}`;
       card.innerHTML = `
-        <h4><span class="pill">${p.label}</span><span class="pill" style="opacity:.75">Thinking…</span></h4>
+        <h4><span class="pill">${p.label}</span><span class="pill" style="opacity:.75">Generating…</span></h4>
         <div class="line wide"></div>
         <div class="line med"></div>
         <div class="line short"></div>
@@ -258,11 +256,15 @@
     });
   }
 
-  function createCard({persona, label, tag, long, onClick}){
+  function createCard({persona, label, tag, pct, long, onClick}){
     const div = document.createElement('div');
     div.className = `persona-card ${cardClass(persona)}`;
     div.innerHTML = `
-      <h4><span class="pill">${label}</span><span class="pill" aria-label="Decision tag">${tag}</span></h4>
+      <h4>
+        <span class="pill">${label}</span>
+        <span class="pill">${tag}</span>
+        <span class="pill pill--muted">${pct}%</span>
+      </h4>
       <p>${long}</p>
       <div class="regen-hint">Tap to regenerate this path</div>
     `;
@@ -275,11 +277,11 @@
   function detectTopic(q){
     const s=(q||'').toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
     if (has('email','inbox','reply','work','monday','case','meeting','deck','presentation','boss','manager')) return 'work';
-    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen','lunch','game')) return 'food'; // 'game' often home-night context
+    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen','lunch','game')) return 'food';
     if (has('relationship','date','partner','spouse','family','friend','text','call','break up')) return 'relationship';
     if (has('gym','run','workout','health','sleep','hydrate','walk','yoga','sick','doctor')) return 'health';
-    if (has('money','budget','buy','purchase','cart','price','salary')) return 'money';
-    if (has('video','stream','write','script','record','edit','channel','shorts','song')) return 'creative';
+    if (has('money','budget','buy','purchase','cart','price','salary','quit','job','income')) return 'money';
+    if (has('video','stream','write','script','record','edit','channel','shorts','song','blog','blogger')) return 'creative';
     if (has('trip','travel','flight','hotel','book','drive','commute')) return 'travel';
     if (has('party','hang','friends','event','invite')) return 'social';
     return 'general';
@@ -289,8 +291,8 @@
     relationship:['text message','voice note','coffee invite','note'],
     food:['pan','bowl','order ticket','recipe note','controller'],
     health:['timer','water bottle','doctor note','walk route'],
-    money:['budget line','cart','limit note','transfer'],
-    creative:['script stub','thumbnail','draft file','outline'],
+    money:['budget line','cart','limit note','transfer','spreadsheet'],
+    creative:['script stub','thumbnail','draft file','outline','post brief'],
     travel:['booking tab','packing list','route card','note'],
     social:['invite','group chat','playlist','note'],
     general:['note','list','tab','timer']
@@ -316,66 +318,107 @@
   }
   function timebox(topic){
     return ({
-      work:'25 minutes',
-      food:'45 minutes',
-      relationship:'15 minutes',
-      health:'20 minutes',
-      money:'10 minutes',
-      creative:'30 minutes',
-      travel:'20 minutes',
-      social:'30 minutes',
-      general:'20 minutes'
+      work:'25 minutes', food:'45 minutes', relationship:'15 minutes', health:'20 minutes',
+      money:'10 minutes', creative:'30 minutes', travel:'20 minutes', social:'30 minutes', general:'20 minutes'
     })[topic] || '20 minutes';
   }
 
-  /* =============== Decision assignment =============== */
-  // Force divergence: exactly one each of YES / NO / TINY TEST / WAIT
+  /* =============== % logic =============== */
+  async function getBaseOdds(question){
+    const res = await fetch("/api/reading", {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ question, want:"odds_only_v1" })
+    }).then(r=>r.json()).catch(()=>null);
+    const n = Number(res?.odds);
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 50;
+  }
+  function computeDecisionWeights(baseOdds){
+    const p = baseOdds/100;
+    const amb = 1 - Math.abs(p - 0.5)*2;     // 0..1 (peak at 50/50)
+    const tiny = Math.round(amb * 40);       // 0..40
+    const wait = Math.round(amb * 30);       // 0..30
+    const R = Math.max(0, 100 - tiny - wait);
+    const yes = Math.round(R * p);
+    const no  = Math.max(0, 100 - tiny - wait - yes);
+    return { yes, no, tiny, wait };          // sums to 100
+  }
+
+  /* =============== Decision assignment (one each) =============== */
   function assignDecisions(question){
     const base = ['yes','no','tiny','wait'];
-    // seeded shuffle
-    let seed = seededHash(question+nowBucket());
+    let seed = seededHash(question+nowBucket()); // stable-ish for 2h
     for (let i=base.length-1;i>0;i--){
-      const j = seed % (i+1); [base[i], base[j]] = [base[j], base[i]]; seed = (seed*1664525+1013904223)>>>0;
+      const j = seed % (i+1); [base[i], base[j]] = [base[j], base[i]];
+      seed = (seed*1664525+1013904223)>>>0;
     }
-    // Map personas deterministically to shuffled decisions
     return { bold:base[0], cautious:base[1], neutral:base[2], mystic:base[3] };
   }
 
-  /* =============== Backend bridge (optional) =============== */
-  function buildPersonaPrompt(question, topic, persona, seed, decision){
+  /* =============== Backend bridge (stance-enforced) =============== */
+  function buildPersonaPromptV3({question, topic, persona, seed, decision, pct}){
     return {
       mode: 'persona_outcome_v1',
-      instruction: 'Write a 4–6 sentence micro-story that presents a concrete outcome path in this shared world. This persona MUST reflect its stance and the assigned decision (yes/no/tiny/wait). Use a different artifact/detail than other personas. No bullet lists. Avoid hedges and generic motivation.',
+      decision, likelihood_percent: pct,
+      instruction: [
+        `You MUST argue "${decision.toUpperCase()}". Do not hedge or suggest the opposite.`,
+        `Write 2–3 sentences. Concrete artifact and time window.`,
+        `No lists, no clichés, avoid phrases like "winds of change".`
+      ].join(' '),
       question, topic, seed,
-      persona: { id: persona.id, label: persona.label, stance: persona.stance, lexicon: persona.lexicon, bans: persona.bans },
-      decision, // 'yes' | 'no' | 'tiny' | 'wait'
-      guidance: {
-        end_marker: seed.window,
-        style_rules: {
-          metaphor_budget: persona.id==='mystic' ? 1 : 0,
-          sentence_limits: { min:4, max:6 }
-        }
-      }
+      persona: {
+        id: persona.id, label: persona.label, stance: persona.stance,
+        lexicon: persona.lexicon, bans: [...(persona.bans||[]), 'winds of change','everyone agrees','same as above']
+      },
+      guidance: { end_marker: seed?.window || 'tomorrow', sentence_limits: {min:2, max:3} }
     };
   }
-  async function fetchReading(payload){
-    const controller = new AbortController(); const timer = setTimeout(()=>controller.abort(), 20000);
-    try{
-      const resp = await fetch("/api/reading", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload), signal: controller.signal });
-      const data = await resp.json().catch(()=>null);
-      return data || null;
-    }catch{ return null; } finally{ clearTimeout(timer); }
-  }
-  async function fetchPersonaNarrative(question, topic, persona, seed, decision){
-    const controls = buildPersonaPrompt(question, topic, persona, seed, decision);
-    const res = await fetchReading({ question, persona: persona.id, controls });
-    const txt = typeof res?.narrative === 'string' && res.narrative.trim()
-      ? res.narrative.trim()
-      : (typeof res?.long === 'string' && res.long.trim() ? res.long.trim() : null);
-    return txt;
+  async function fetchPersonaNarrativeV3(args){
+    const controls = buildPersonaPromptV3(args);
+    const res = await fetch("/api/reading", {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ question: args.question, persona: args.persona.id, controls })
+    }).then(r=>r.json()).catch(()=>null);
+    const txt = (res?.narrative || res?.long || '').trim();
+    return txt && txt.split('.').filter(Boolean).length ? txt : null;
   }
 
-  /* =============== Local synthesis (strong guardrails) =============== */
+  /* =============== Local short fallback (2–3 sentences) =============== */
+  function tinyText(pid, decision, topic, seed, pct){
+    const tb = timebox(topic);
+    const A = seed?.artifact || 'note', W = seed?.window || 'tomorrow';
+    const add = (s)=> s.replace(/\s+/g,' ').trim();
+
+    const map = {
+      bold: {
+        yes:  `Say yes. Move now for ${tb}, cut extras, and stop on a win by ${W}.`,
+        no:   `Say no. Close the tab, write one decisive line in the ${A}, and bank the energy for ${W}.`,
+        tiny: `Run a tiny test. One slice, ${tb}, no scope creep; ship or stop by ${W}.`,
+        wait: `Wait. Park it in the ${A}, set a ping for ${W}, and return with fresh eyes.`
+      },
+      cautious: {
+        yes:  `Yes, but cap it. Set a budget and ${tb} limit, add a stop rule in the ${A}, and reassess ${W} morning.`,
+        no:   `Not tonight. Log the top risks in the ${A}, choose a low-effort wind-down, and revisit ${W}.`,
+        tiny: `Test only. Borrow/demo for ${tb}; if no clear pull in five minutes, abort and rest.`,
+        wait: `Hold for a safer window. Title a ${A} with budget + criteria, and wait until ${W}.`
+      },
+      neutral: {
+        yes:  `Proceed if it meets your numbers. While it spins up, prep basics; stop at a measurable checkpoint by ${W}.`,
+        no:   `Pass. Batch two small chores, sleep earlier, and decide with a clearer head ${W}.`,
+        tiny: `Tutorial-only. Timer ${tb}, log “fun/not fun,” then schedule or uninstall.`,
+        wait: `Defer. Set a single price/time alert and move on; you’ll act when it hits the target.`
+      },
+      mystic: {
+        yes:  `If your body says yes, go. Play lightly, end one beat early, and leave a glimmer for ${W}.`,
+        no:   `If the screen feels loud, decline. Brew something quiet and let the night close; the moment returns by ${W}.`,
+        tiny: `Ask for a sign: one small omen, then one path only; stop while it’s warm and listen till ${W}.`,
+        wait: `Hush tonight. Slip the ${A} under a book and wait for a clearer pull by ${W}.`
+      }
+    };
+    const b = pid==='bold'?map.bold:pid==='cautious'?map.cautious:pid==='neutral'?map.neutral:map.mystic;
+    return add(b[decision]);
+  }
+
+  /* =============== Diversity guard =============== */
   function ngrams(text, n=4){
     const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
     const grams=[]; for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
@@ -387,54 +430,10 @@
     return true;
   }
   function trimByBounds(txt, min, max){
+    if (txt.length < min) return txt;
     if (txt.length <= max) return txt;
     const cut = txt.lastIndexOf('.', max);
     return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
-  }
-  function personaOutcomeText(pid, decision, topic, seed){
-    const tb = timebox(topic);
-    const A = seed.artifact, W = seed.window;
-    const tails = {
-      work:` By ${W}, your board shows the change.`,
-      food:` By ${W}, you feel fed, not fried.`,
-      relationship:` By ${W}, you’ll know where the tone stands.`,
-      health:` By ${W}, your body thanks you.`,
-      money:` By ${W}, your balance still feels clean.`,
-      creative:` By ${W}, a draft exists in daylight.`,
-      travel:` By ${W}, fewer tabs and one decision locked.`,
-      social:` By ${W}, warmth without depletion.`,
-      general:` By ${W}, the next step is obvious.`
-    };
-    const end = tails[topic]||tails.general;
-
-    const lines = {
-      bold: {
-        yes:  `Buy the thing. Queue the install, dim the lights, and give it ${tb}. Turn off side quests—start the main line. When the meter hits ${tb}, save, quit, and sleep. ${end}`,
-        no:   `Skip the purchase. Open the ${A} and write one decisive line about what you’ll do instead. Put the saved cash toward a treat this weekend. ${end}`,
-        tiny: `Don’t buy yet. Download a demo or watch 10 minutes of a no-spoiler run, timer set to ${tb}. If it still pulls, green-light tomorrow. ${end}`,
-        wait: `Hold. Close the store tab and set a calendar ping for tomorrow lunch. If the urge survives, buy; if not, you dodged a time sink. ${end}`
-      },
-      cautious: {
-        yes:  `If you buy, cap the night. Set a spending ceiling and a ${tb} play cap. Turn on night mode and alerts off. Stop at the first friction point and leave a note for future-you. ${end}`,
-        no:   `Don’t buy tonight. Put the title on a 48-hour hold and list one reason you’ll be glad you waited. Stage a low-effort wind-down instead. ${end}`,
-        tiny: `Test only. Borrow a friend’s copy or try cloud play for ${tb}. If no joy in five minutes, abort and switch to stretch + tea. ${end}`,
-        wait: `Wait for the weekend window. Park the urge in a ${A} titled “Saturday green light” with a budget and stop rule. ${end}`
-      },
-      neutral: {
-        yes:  `Buy if price ≤ your set limit. While it downloads, dish up dinner and queue updates. Play ${tb}, capture one “fun/not fun” note, and uninstall if it misses. ${end}`,
-        no:   `Pass tonight. Batch chores during download-temptation time and go to bed 30 minutes earlier. Tomorrow you’ll decide with a clearer head. ${end}`,
-        tiny: `Try a tiny slice: tutorial only. Timer at ${tb}. If, at stop, you want more, schedule a block this weekend. ${end}`,
-        wait: `Compare prices once, set a deal alert, and move on. You’ll act when it hits the target. ${end}`
-      },
-      mystic: {
-        yes:  `If the room softens and you feel that warm click—say yes. Let the game carry you for ${tb}, then end one scene early. Leave a glimmer for tomorrow. ${end}`,
-        no:   `If your body feels heavy and the screen feels loud—no. Brew something quiet, step outside for three breaths, and let the night close gently. ${end}`,
-        tiny: `Ask for a sign: if the download finishes during a single song, you play only the opening path, then stop. If not, you wait. ${end}`,
-        wait: `Tonight wants hush. Place the ${A} under a book, light flicked low, and leave it alone. The right night will invite itself. ${end}`
-      }
-    };
-    const bucket = pid==='bold'?lines.bold:pid==='cautious'?lines.cautious:pid==='neutral'?lines.neutral:lines.mystic;
-    return bucket[decision];
   }
 
   /* ================== FLOW ================== */
@@ -443,7 +442,6 @@
     orbMsg.textContent = on ? "…" : "ASK A QUESTION";
     if(on) renderPersonaSkeletons();
   }
-
   function distinctArtifacts(topic){
     const pool = [...(ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general)];
     return (idx)=> pool[(idx)%pool.length];
@@ -454,13 +452,14 @@
     try{
       const topic = detectTopic(question);
       const seed  = extractSeed(question, topic);
-      const decisions = assignDecisions(question); // {bold,no,tiny,wait} shuffled
-      const artPick = distinctArtifacts(topic);
+      const decisions = assignDecisions(question); // { bold, cautious, neutral, mystic }
+      const baseOdds  = await getBaseOdds(question);
+      const weights   = computeDecisionWeights(baseOdds); // {yes,no,tiny,wait}
+      const artPick   = distinctArtifacts(topic);
       const usedGrams = [];
 
       responsesEl.innerHTML = '';
 
-      // Render each persona with guaranteed divergence
       for (let i=0;i<PERSONAS.length;i++){
         const p = PERSONAS[i];
         const placeholder = document.createElement('div');
@@ -471,15 +470,18 @@
         `;
         responsesEl.appendChild(placeholder);
 
-        (async()=>{
-          const decision = decisions[p.id]; // yes | no | tiny | wait
-          // Prefer backend creativity but force the decision + stance
-          let text = await fetchPersonaNarrative(question, topic, p, {...seed, artifact: artPick(i)}, decision);
-          if(!text || text.length<40){
-            text = personaOutcomeText(p.id, decision, topic, {...seed, artifact: artPick(i)});
-          }
+        (async ()=>{
+          const decision = decisions[p.id];           // 'yes' | 'no' | 'tiny' | 'wait'
+          const pct = Math.max(0, Math.min(100, weights[decision] ?? 25));
+          const localSeed = { ...seed, artifact: artPick(i) };
 
-          // Anti-echo: if too close to others, append a small, persona-specific twist
+          // Try backend (stance enforced); otherwise local short text
+          let text = await fetchPersonaNarrativeV3({
+            question, topic, persona:p, seed:localSeed, decision, pct
+          });
+          if(!text || text.length < 20) text = tinyText(p.id, decision, topic, localSeed, pct);
+
+          // Anti-echo (light)
           let tries = 0;
           while(!distanceOk(text, usedGrams) && tries<2){
             const twist = p.id==='neutral' ? ' Log one note, then close.'
@@ -496,12 +498,13 @@
             persona: p.id,
             label: p.label,
             tag: tagMap[decision],
+            pct,
             long: trimByBounds(text, p.minLen, p.maxLen),
             onClick: async ()=>{
-              const fresh = await fetchPersonaNarrative(question, topic, p, {...seed, artifact: artPick(i+1)}, decision)
-                         || personaOutcomeText(p.id, decision, topic, {...seed, artifact: artPick(i+1)});
+              const fresh = await fetchPersonaNarrativeV3({
+                question, topic, persona:p, seed:{...localSeed, artifact: artPick(i+1)}, decision, pct
+              }) || tinyText(p.id, decision, topic, {...localSeed, artifact: artPick(i+1)}, pct);
               const clean = trimByBounds(fresh, p.minLen, p.maxLen);
-              // swap just this card’s text
               card.querySelector('p').textContent = clean;
             }
           });
@@ -527,6 +530,7 @@
 </script>
 </body>
 </html>
+
 
 
 

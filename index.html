@@ -3,193 +3,98 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AIght Ball – Coming Soon</title>
+  <title>AIght Ball – Voice Model Test</title>
   <style>
     :root{
-      --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#111111; --border:#333;
-      --accent:#33cc99; --accent-hover:#2ab386; --triW:160px; --triH:140px;
-      --bold:#2dd4bf; --bold-ink:#05201c;
-      --caut:#f2c94c; --caut-ink:#221c08;
-      --neut:#7aa0b4; --neut-ink:#07131a;
-      --myst:#a78bfa; --myst-ink:#1a0f2b;
+      --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#111; --border:#333;
+      --accent:#33cc99; --accent-hover:#2ab386;
+      --driver:#2dd4bf; --planner:#f2c94c; --probe:#7aa0b4; --sage:#a78bfa;
+      --ink:#04110d;
     }
     *{ box-sizing:border-box; }
     body{
-      margin:0; font-family:Arial,Helvetica,sans-serif;
+      margin:0; font-family:Inter,system-ui,Arial,Helvetica,sans-serif;
       background:radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
       color:var(--fg); min-height:100vh; display:grid;
       grid-template-rows:auto auto 1fr auto; align-items:start;
     }
+    .hero{ display:grid; place-items:center; padding:2rem 1.25rem .5rem; }
+    .hero img{ width:min(70vw,520px); max-height:45vh; object-fit:contain; border-radius:20px;
+      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none; }
 
-    /* Hero */
-    .hero{ display:grid; place-items:center; padding:2.25rem 1.25rem 0.75rem; }
-    .hero img{
-      width:min(70vw,500px); max-height:45vh; object-fit:contain; border-radius:24px;
-      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none;
-    }
-
-    /* Demo container */
-    .demo{
-      margin:0.5rem auto 0; padding:1.5rem 1.25rem 2rem; border:1px solid var(--border);
-      border-radius:20px; width:min(92vw, 720px); background:linear-gradient(180deg,#121212,var(--card));
+    .demo{ margin:.5rem auto 0; padding:1.25rem 1.1rem 1.6rem; border:1px solid var(--border);
+      border-radius:18px; width:min(92vw, 760px); background:linear-gradient(180deg,#121212,var(--card));
       box-shadow:0 24px 50px rgba(0,0,0,.35);
     }
 
-    /* Orb */
-    .oracle-wrap{ position:relative; display:grid; place-items:center; margin-bottom:1rem; padding:1rem 0; overflow:visible; }
-    .mist, .mist::before, .mist::after{
-      content:""; position:absolute; pointer-events:none; width:520px; height:520px; border-radius:50%; filter:blur(26px);
-      background:
-        radial-gradient(120px 120px at 30% 40%, rgba(51,204,153,.12), transparent 10%),
-        radial-gradient(180px 180px at 70% 30%, rgba(100,180,255,.10), transparent 10%),
-        radial-gradient(140px 140px at 50% 70%, rgba(255,255,255,.06), transparent 10%);
-      animation:drift 18s ease-in-out infinite; opacity:.6; transform:translate3d(0,0,0);
-    }
-    .mist{ top:-40px; left:50%; transform:translateX(-50%); }
-    .mist::before{ top:-30px; left:-80px; animation-duration:22s; animation-direction:reverse; }
-    .mist::after{ top:10px; left:80px; animation-duration:26s; opacity:.5; }
-    @keyframes drift{ 0%{transform:translate(-50%,0) rotate(0);opacity:.55}50%{transform:translate(-48%,-8px) rotate(6deg);opacity:.8}100%{transform:translate(-50%,0) rotate(0);opacity:.55}}
-
-    .eightball{
-      position:relative; width:min(68vw,360px); height:min(68vw,360px); border-radius:50%;
+    .oracle-wrap{ display:grid; place-items:center; margin-bottom:.75rem; }
+    .eightball{ width:min(64vw,320px); height:min(64vw,320px); border-radius:50%;
       background:radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
       box-shadow:inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
-      display:grid; place-items:center; overflow:hidden; transition:transform .2s cubic-bezier(.2,.8,.2,1);
-    }
-    .eightball::before{
-      content:""; position:absolute; top:6%; left:12%; width:40%; height:28%;
-      background:radial-gradient(ellipse at top left, rgba(255,255,255,.22), rgba(255,255,255,0));
-      filter:blur(4px); transform:rotate(-12deg); pointer-events:none;
-    }
-    .window{ position:relative; width:50%; height:50%; border-radius:50%;
+      display:grid; place-items:center; overflow:hidden; transition:transform .2s cubic-bezier(.2,.8,.2,1); }
+    .eightball .window{ width:50%; height:50%; border-radius:50%; display:grid; place-items:center;
       background:radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
-      box-shadow:inset 0 0 40px rgba(0,0,0,.9); display:grid; place-items:center;
-      border:2px solid #0f2a3a; overflow:hidden;
-    }
-    .window::before{ content:""; position:absolute; inset:0; border-radius:50%;
-      background:radial-gradient(circle, transparent 70%, rgba(0,0,0,.7) 100%); pointer-events:none; z-index:1;
-    }
-    .triangle{ position:absolute; left:50%; top:58%; transform:translate(-50%,-50%); width:0; height:0;
-      border-left:calc(var(--triW)/2) solid transparent; border-right:calc(var(--triW)/2) solid transparent;
-      border-top:var(--triH) solid #163a5a; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));
-    }
-    .triangle .msg{
-      position:absolute; left:50%; top:calc(-1 * var(--triH) * 0.72); transform:translateX(-50%);
-      width:calc(var(--triW) * 0.8); text-align:center; font-weight:800; font-size:1.05rem; letter-spacing:.5px;
-      color:#cde7ff; text-shadow:0 1px 0 rgba(0,0,0,.5); line-height:1.2; margin:0 auto;
-    }
+      border:2px solid #0f2a3a; box-shadow:inset 0 0 40px rgba(0,0,0,.9); }
+    .window .triangle{ position:relative; width:0; height:0; border-left:80px solid transparent; border-right:80px solid transparent; border-top:120px solid #163a5a; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); }
+    .triangle .msg{ position:absolute; top:-82px; left:50%; transform:translateX(-50%);
+      width:120px; text-align:center; font-weight:800; font-size:1.05rem; letter-spacing:.4px; color:#cde7ff; text-shadow:0 1px 0 rgba(0,0,0,.5); }
 
-    /* Ask row */
-    .qa{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0 .25rem; }
-    .helper{ color:var(--muted); margin:.25rem 0 .75rem; text-align:center; }
+    .qa{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0 .4rem; }
+    input[type="text"]{
+      padding:.85rem .95rem; border:none; border-radius:10px; min-width:300px; background:#1a1a1a; color:#fff; outline:1px solid var(--border);
+    }
+    button{
+      padding:.9rem 1.1rem; border:none; border-radius:12px; background:var(--accent); color:var(--ink); font-weight:800; cursor:pointer;
+      transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
+    }
+    button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
+    .helper{ color:var(--muted); text-align:center; margin:.25rem 0 .75rem; }
 
-    /* Responses */
-    .responses-wrap{ margin-top:.5rem; border:1px solid var(--border); border-radius:14px; background:#121212; max-height:420px; overflow:auto; padding:.6rem; }
-    .responses-grid{ display:grid; grid-template-columns:1fr; gap:.5rem; }
+    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:440px; overflow:auto; padding:.6rem; }
+    .responses-grid{ display:grid; grid-template-columns:1fr; gap:.6rem; }
     @media(min-width:680px){ .responses-grid{ grid-template-columns:1fr 1fr; } }
 
     .persona-card{
-      position:relative; border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .9rem;
+      border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .95rem;
       background:linear-gradient(180deg, #141414, #0f0f0f);
-      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease;
-      cursor:pointer;
+      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease; cursor:pointer;
     }
     .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
-    .persona-card h4{ margin:0 0 .35rem; font-size:.95rem; letter-spacing:.4px; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-    .persona-card .pill{ display:inline-flex; align-items:center; gap:.35rem; font-weight:700; padding:.15rem .6rem; border-radius:999px; background:var(--accent); color:#04110d; font-size:.82rem; }
-    .persona-card .pill--muted{ background:#1a1a1a; color:#cfcfcf; outline:1px solid var(--border); }
-    .persona-card p{ margin:0; color:#e3e3e3; line-height:1.45; white-space:pre-wrap; }
+    .head{ display:flex; align-items:center; gap:.5rem; margin:0 0 .35rem; }
+    .pill{ display:inline-flex; align-items:center; gap:.35rem; font-weight:800; padding:.16rem .55rem; border-radius:999px; background:var(--accent); color:var(--ink); font-size:.78rem; text-transform:uppercase; letter-spacing:.3px; }
+    .pill.role{ background:#222; color:#ddd; font-weight:700; }
+    .odds{ margin-left:auto; font-weight:900; font-size:.95rem; color:#cfcfcf; }
+    .body{ margin:0; color:#e6e6e6; line-height:1.5; white-space:pre-wrap; }
 
-    .card--bold{ background:linear-gradient(180deg, rgba(45,212,191,.10), #0e1716); border-color:rgba(45,212,191,.35); }
-    .card--bold h4{ color:var(--bold); }
-    .card--bold .pill{ background:var(--bold); color:var(--bold-ink); }
+    .card--driver{ border-color:rgba(45,212,191,.35); }
+    .card--planner{ border-color:rgba(242,201,76,.35); }
+    .card--probe{ border-color:rgba(122,160,180,.35); }
+    .card--sage{ border-color:rgba(167,139,250,.35); }
 
-    .card--caut{ background:linear-gradient(180deg, rgba(242,201,76,.10), #19160a); border-color:rgba(242,201,76,.35); }
-    .card--caut h4{ color:var(--caut); }
-    .card--caut .pill{ background:var(--caut); color:var(--caut-ink); }
-
-    .card--neut{ background:linear-gradient(180deg, rgba(122,160,180,.12), #0f1417); border-color:rgba(122,160,180,.35); }
-    .card--neut h4{ color:var(--neut); }
-    .card--neut .pill{ background:var(--neut); color:var(--neut-ink); }
-
-    .card--myst{ background:linear-gradient(180deg, rgba(167,139,250,.12), #130f19); border-color:rgba(167,139,250,.35); }
-    .card--myst h4{ color:var(--myst); }
-    .card--myst .pill{ background:var(--myst); color:var(--myst-ink); }
-
-    /* Skeleton */
     .skeleton{ position:relative; overflow:hidden; }
     .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
     .skeleton .line.wide{ width:92%; } .skeleton .line.med{ width:75%; } .skeleton .line.short{ width:55%; }
-    .skeleton::after{
-      content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
-      animation:shimmer 1.2s infinite;
-    }
+    .skeleton::after{ content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+      animation:shimmer 1.2s infinite; }
     @keyframes shimmer{ 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
-
-    input[type="email"], input[type="text"]{
-      padding:.85rem .9rem; border:none; border-radius:10px; min-width:280px; background:#1a1a1a; color:#fff; outline:1px solid var(--border);
-    }
-    button{
-      padding:.9rem 1.2rem; border:none; border-radius:12px; background:var(--accent); color:#02110d; font-weight:700; cursor:pointer;
-      transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
-    }
-    button:hover{ background:var(--accent-hover); }
-    button:active{ transform:translateY(1px); }
-
-    /* Signup centered */
-    .signup{
-      display:flex; justify-content:center; align-items:center; gap:.6rem;
-      margin:1.25rem auto 0; width:min(92vw,720px);
-    }
 
     footer{ margin:1.25rem 0 1.5rem; text-align:center; color:#8a8a8a; font-size:.95rem; }
     a{ color:var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
     .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-
-    @keyframes wobble{
+    .shake{ animation:wobble .6s ease-in-out; } @keyframes wobble{
       0%{transform:rotate(0) translateX(0)}20%{transform:rotate(3deg) translateX(6px)}
       40%{transform:rotate(-3deg) translateX(-6px)}60%{transform:rotate(2deg) translateX(4px)}
-      80%{transform:rotate(-2deg) translateX(-4px)}100%{transform:rotate(0) translateX(0)}
-    }
-    .shake{ animation:wobble .6s ease-in-out; }
-
-    .window::after{
-      content:""; position:absolute; inset:-99%; opacity:.05;
-      background:
-        radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
-        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.20), transparent 60%),
-        radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
-      filter:blur(18px) saturate(1.05); mix-blend-mode:screen; animation:swirl 22s ease-in-out infinite; pointer-events:none; border-radius:50%;
-      clip-path:circle(50% at 50% 50%);
-    }
-    .triangle::after{
-      content:""; position:absolute; left:50%; top:calc(-1 * var(--triH)); transform:translateX(-50%);
-      width:var(--triW); height:var(--triH); clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
-      background:
-        radial-gradient(200px 200px at 65% 60%, rgba(180,220,255,.20), transparent 40%),
-        radial-gradient(200px 200px at 65% 75%, rgba(51,204,153,.20), transparent 40%);
-      filter:blur(10px); mix-blend-mode:screen; opacity:.7; animation:swirl 18s ease-in-out infinite reverse; pointer-events:none;
-    }
-    @keyframes swirl{ 0%{transform:translateX(-50%) rotate(0);opacity:.6}50%{transform:translateX(-50%) rotate(5deg);opacity:.85}100%{transform:translateX(-50%) rotate(0);opacity:.6} }
+      80%{transform:rotate(-2deg) translateX(-4px)}100%{transform:rotate(0) translateX(0)}}
   </style>
 </head>
 <body>
-  <!-- HERO -->
   <section class="hero" aria-label="AIght Ball">
     <img src="Images/Logo.jpg" alt="AIght Ball logo"/>
   </section>
 
-  <!-- DEMO -->
   <section id="demo" class="demo" role="region" aria-label="AIght Ball demo">
     <div class="oracle-wrap">
-      <div class="mist"></div>
-      <div id="orb" class="eightball" aria-hidden="true">
-        <div class="window">
-          <div class="triangle">
-            <div id="orb-msg" class="msg">ASK A QUESTION</div>
-          </div>
-        </div>
-      </div>
+      <div class="eightball" id="orb"><div class="window"><div class="triangle"><div class="msg" id="orb-msg">ASK A QUESTION</div></div></div></div>
     </div>
 
     <form id="question-form" class="qa" autocomplete="off">
@@ -200,17 +105,10 @@
     </form>
     <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
 
-    <!-- Four distinct persona outcomes (no main narrator) -->
     <div class="responses-wrap" aria-live="polite">
       <div id="responses" class="responses-grid"></div>
     </div>
   </section>
-
-  <!-- Signup (centered) -->
-  <form class="signup" name="signup" method="POST" data-netlify="true">
-    <input type="email" name="email" placeholder="Enter your email for early access" required/>
-    <button type="submit">Notify Me</button>
-  </form>
 
   <footer>
     © 2025 AIght Ball · Follow us on
@@ -219,317 +117,293 @@
   </footer>
 
 <script>
-  /* ================== DOM HOOKS ================== */
-  const orb = document.getElementById('orb');
-  const orbMsg = document.getElementById('orb-msg');
-  const inputEl = document.getElementById('user-question');
-  const askBtn = document.querySelector('#question-form button[type="submit"]');
-  const shakeBtn = document.getElementById('shake-btn');
-  const responsesEl = document.getElementById('responses');
+/* ================== DOM HOOKS ================== */
+const orb = document.getElementById('orb');
+const orbMsg = document.getElementById('orb-msg');
+const inputEl = document.getElementById('user-question');
+const askBtn = document.querySelector('#question-form button[type="submit"]');
+const shakeBtn = document.getElementById('shake-btn');
+const responsesEl = document.getElementById('responses');
 
-  /* ================== PERSONAS (stance + style) ================== */
-  const PERSONAS = [
-    { id:'bold',     label:'Bold',     color:'var(--bold)',  stance:'advocate', lexicon:['ship','push','cut','send','state','move'], bans:['maybe','perhaps','consider'], minLen:60, maxLen:160 },
-    { id:'cautious', label:'Cautious', color:'var(--caut)',  stance:'contain',  lexicon:['cap','limit','stage','buffer','guard','delay'], bans:['slam','all-in'], minLen:60, maxLen:170 },
-    { id:'neutral',  label:'Neutral / Practical', color:'var(--neut)', stance:'optimize', lexicon:['sort','log','batch','scope','schedule','track'], bans:['vibes','destiny'], minLen:60, maxLen:160 },
-    { id:'mystic',   label:'Mystic',  color:'var(--myst)',  stance:'timing',   lexicon:['tide','hush','glimmer','signal','quiet','align'], bans:['KPI','OKR'], minLen:60, maxLen:170 },
-  ];
+/* ================== VOICES ================== */
+const VOICES = [
+  { id:'driver', label:'Driver', badge:'Direct', color:'var(--driver)' },
+  { id:'planner', label:'Planner', badge:'Plan', color:'var(--planner)' },
+  { id:'probe', label:'Inquisitive', badge:'Probe', color:'var(--probe)' },
+  { id:'sage', label:'Sage', badge:'Muse', color:'var(--sage)' },
+];
 
-  /* ================== UTILITIES ================== */
-  function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
-  function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
-  function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
-  function nowBucket(minutes=120){ return Math.floor(Date.now()/1000/60/minutes); }
+/* ================== UTIL ================== */
+function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
+function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
+function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
+function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
+function cardClass(id){ return id==='driver'?'card--driver':id==='planner'?'card--planner':id==='probe'?'card--probe':'card--sage'; }
 
-  function renderPersonaSkeletons(){
-    responsesEl.innerHTML = '';
-    PERSONAS.forEach(p=>{
-      const card = document.createElement('div');
-      card.className = `persona-card skeleton ${cardClass(p.id)}`;
-      card.innerHTML = `
-        <h4><span class="pill">${p.label}</span><span class="pill" style="opacity:.75">Generating…</span></h4>
-        <div class="line wide"></div>
-        <div class="line med"></div>
-        <div class="line short"></div>
-      `;
-      responsesEl.appendChild(card);
-    });
-  }
-
-  function createCard({persona, label, tag, pct, long, onClick}){
+function renderSkeletons(){
+  responsesEl.innerHTML = '';
+  VOICES.forEach(v=>{
     const div = document.createElement('div');
-    div.className = `persona-card ${cardClass(persona)}`;
+    div.className = `persona-card skeleton ${cardClass(v.id)}`;
     div.innerHTML = `
-      <h4>
-        <span class="pill">${label}</span>
-        <span class="pill">${tag}</span>
-        <span class="pill pill--muted">${pct}%</span>
-      </h4>
-      <p>${long}</p>
-      <div class="regen-hint">Tap to regenerate this path</div>
+      <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+      <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
     `;
-    div.addEventListener('click', onClick);
-    return div;
-  }
-  function cardClass(id){ return id==='bold' ? 'card--bold' : id==='cautious' ? 'card--caut' : id==='neutral' ? 'card--neut' : 'card--myst'; }
+    responsesEl.appendChild(div);
+  });
+}
 
-  /* =============== Topic & Seed =============== */
-  function detectTopic(q){
-    const s=(q||'').toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
-    if (has('email','inbox','reply','work','monday','case','meeting','deck','presentation','boss','manager')) return 'work';
-    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen','lunch','game')) return 'food';
-    if (has('relationship','date','partner','spouse','family','friend','text','call','break up')) return 'relationship';
-    if (has('gym','run','workout','health','sleep','hydrate','walk','yoga','sick','doctor')) return 'health';
-    if (has('money','budget','buy','purchase','cart','price','salary','quit','job','income')) return 'money';
-    if (has('video','stream','write','script','record','edit','channel','shorts','song','blog','blogger')) return 'creative';
-    if (has('trip','travel','flight','hotel','book','drive','commute')) return 'travel';
-    if (has('party','hang','friends','event','invite')) return 'social';
-    return 'general';
-  }
-  const ARTIFACT_POOLS = {
-    work:['Slack DM','email draft','ticket','calendar block','deck slide'],
-    relationship:['text message','voice note','coffee invite','note'],
-    food:['pan','bowl','order ticket','recipe note','controller'],
-    health:['timer','water bottle','doctor note','walk route'],
-    money:['budget line','cart','limit note','transfer','spreadsheet'],
-    creative:['script stub','thumbnail','draft file','outline','post brief'],
-    travel:['booking tab','packing list','route card','note'],
-    social:['invite','group chat','playlist','note'],
-    general:['note','list','tab','timer']
+function createCard({voice, label, badge, pct, text, onClick}){
+  const div = document.createElement('div');
+  div.className = `persona-card ${cardClass(voice)}`;
+  const pctStr = (typeof pct === 'number') ? `${pct}%` : '—';
+  div.innerHTML = `
+    <div class="head">
+      <span class="pill role">${label}</span>
+      <span class="pill">${badge}</span>
+      <span class="odds">${pctStr}</span>
+    </div>
+    <p class="body">${text}</p>
+    <div class="helper" style="margin-top:.4rem">Tap to regenerate this card</div>
+  `;
+  div.addEventListener('click', onClick);
+  return div;
+}
+
+/* ================== TOPIC + CONTEXT ================== */
+const ARTIFACT_POOLS = {
+  work:['Slack DM','email draft','ticket','calendar block','deck slide'],
+  relationship:['text message','voice note','coffee invite','note'],
+  food:['pan','bowl','order ticket','recipe note'],
+  health:['timer','water bottle','doctor note','walk route'],
+  money:['budget line','cart','limit note','transfer'],
+  creative:['script stub','thumbnail','draft file','outline'],
+  travel:['booking tab','packing list','route card','note'],
+  tech:['settings pane','backup','update list','repo'],
+  philosophy:['journal line','sticky note','breath count'],
+  general:['note','list','tab','timer']
+};
+
+function detectTopic(q){
+  const s=q.toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
+  if (has('boss','promotion','raise','job','coworker','department','sabbatical','work','school','degree','career')) return 'work';
+  if (has('invest','house','rent','car','laptop','loans','side hustle','interest','loan','warranty','crypto','budget')) return 'money';
+  if (has('ex','friend','relationship','love','reunion','forgive','apologize','move in','partner','honest','peace')) return 'relationship';
+  if (has('sick','gym','caffeine','therapy','breakfast','meditation','doctor','rest','social-media','cold','health')) return 'health';
+  if (has('dinner','cook','order','vegetarian','groceries','meal','sugar','eat','fasting','coffee')) return 'food';
+  if (has('trip','vacation','travel','ticket','flying','drive','camping','eclipse','abroad')) return 'travel';
+  if (has('youtube','podcast','book','art','guitar','piano','streaming','workspace','creative','painting','poetry')) return 'creative';
+  if (has('dream','passion','path','happiness','purpose','potential','control','balance','intuition')) return 'philosophy';
+  if (has('tiktok','ai','phone','unplug','apps','linux','resume','budget tracking','pc')) return 'tech';
+  return 'general';
+}
+function timebox(topic){
+  return ({work:'25 minutes', food:'40 minutes', relationship:'15 minutes', health:'20 minutes', money:'10 minutes',
+    creative:'30 minutes', travel:'20 minutes', tech:'15 minutes', philosophy:'10 minutes', general:'20 minutes'})[topic]||'20 minutes';
+}
+function extractSeed(question, topic){
+  const seed = seededHash(question+nowBucket());
+  const art = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
+  return {
+    artifact: art[seed % art.length],
+    window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ]
   };
-  function extractSeed(question, topic){
-    const artifacts = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
-    return {
-      actors:['you'],
-      artifact: randFrom(artifacts, seededHash(question+nowBucket())),
-      window: randFrom(['tonight','tomorrow morning','by lunch','this weekend','next week'], seededHash('w'+question+nowBucket())),
-      stakes: ({
-        work:'progress vs. visibility',
-        food:'rest vs. FOMO',
-        relationship:'honesty vs. harmony',
-        health:'recovery vs. momentum',
-        money:'cost vs. delight',
-        creative:'shipping vs. polish',
-        travel:'certainty vs. options',
-        social:'connection vs. energy',
-        general:'effort vs. payoff'
-      })[topic] || 'effort vs. payoff'
-    };
-  }
-  function timebox(topic){
-    return ({
-      work:'25 minutes', food:'45 minutes', relationship:'15 minutes', health:'20 minutes',
-      money:'10 minutes', creative:'30 minutes', travel:'20 minutes', social:'30 minutes', general:'20 minutes'
-    })[topic] || '20 minutes';
-  }
+}
 
-  /* =============== % logic =============== */
-  async function getBaseOdds(question){
-    const res = await fetch("/api/reading", {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ question, want:"odds_only_v1" })
-    }).then(r=>r.json()).catch(()=>null);
-    const n = Number(res?.odds);
-    return Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 50;
+/* ================== PROBABILITY MODEL (voice-specific) ================== */
+function baseYes(q, topic){
+  let b=50, s=q.toLowerCase();
+  if (s.includes('should i')) b+=4;
+  if (s.includes('now')||s.includes('today')) b+=2;
+  if (/(quit|end|sell|delete|cut out)/.test(s)) b-=6;
+  if (/(start|try|begin|learn)/.test(s)) b+=6;
+  if (/(wait|later|too soon)/.test(s)) b-=4;
+  const topicBias = {work:0, money:-2, relationship:-2, health:3, food:2, travel:1, creative:4, tech:0, philosophy:0, general:0}[topic]||0;
+  b+=topicBias;
+  const jitter = ((seededHash(q+topic) % 11) - 5);
+  return Math.max(5, Math.min(95, b+jitter));
+}
+function voicePct(voice, base){
+  // independent tilts per voice
+  if (voice==='driver'){
+    let p = base + (base>=55? +8 : base<=45? -8 : 0);
+    return Math.round(clamp(p/100, .3, .9)*100);
   }
-  function computeDecisionWeights(baseOdds){
-    const p = baseOdds/100;
-    const amb = 1 - Math.abs(p - 0.5)*2;     // 0..1 (peak at 50/50)
-    const tiny = Math.round(amb * 40);       // 0..40
-    const wait = Math.round(amb * 30);       // 0..30
-    const R = Math.max(0, 100 - tiny - wait);
-    const yes = Math.round(R * p);
-    const no  = Math.max(0, 100 - tiny - wait - yes);
-    return { yes, no, tiny, wait };          // sums to 100
+  if (voice==='planner'){
+    let p = base + (base>=60? +4 : base<=55? -6 : 0);
+    // center to 35–65
+    p = Math.max(35, Math.min(65, p));
+    return Math.round(p);
   }
-
-  /* =============== Decision assignment (one each) =============== */
-  function assignDecisions(question){
-    const base = ['yes','no','tiny','wait'];
-    let seed = seededHash(question+nowBucket()); // stable-ish for 2h
-    for (let i=base.length-1;i>0;i--){
-      const j = seed % (i+1); [base[i], base[j]] = [base[j], base[i]];
-      seed = (seed*1664525+1013904223)>>>0;
-    }
-    return { bold:base[0], cautious:base[1], neutral:base[2], mystic:base[3] };
+  if (voice==='probe'){
+    // sometimes omit % entirely; return null 40% of time
+    if ((seededHash(String(base)) % 10) < 4) return null;
+    let p = base + ((seededHash('p'+base)%21)-10); // ±10 wobble
+    return Math.max(20, Math.min(80, Math.round(p)));
   }
-
-  /* =============== Backend bridge (stance-enforced) =============== */
-  function buildPersonaPromptV3({question, topic, persona, seed, decision, pct}){
-    return {
-      mode: 'persona_outcome_v1',
-      decision, likelihood_percent: pct,
-      instruction: [
-        `You MUST argue "${decision.toUpperCase()}". Do not hedge or suggest the opposite.`,
-        `Write 2–3 sentences. Concrete artifact and time window.`,
-        `No lists, no clichés, avoid phrases like "winds of change".`
-      ].join(' '),
-      question, topic, seed,
-      persona: {
-        id: persona.id, label: persona.label, stance: persona.stance,
-        lexicon: persona.lexicon, bans: [...(persona.bans||[]), 'winds of change','everyone agrees','same as above']
-      },
-      guidance: { end_marker: seed?.window || 'tomorrow', sentence_limits: {min:2, max:3} }
-    };
+  // sage
+  {
+    let p = base;
+    if (base>=70) p+=6; else if (base>=40 && base<=60) p-=5; // leans wait in ambiguity
+    return Math.max(40, Math.min(70, Math.round(p)));
   }
-  async function fetchPersonaNarrativeV3(args){
-    const controls = buildPersonaPromptV3(args);
-    const res = await fetch("/api/reading", {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ question: args.question, persona: args.persona.id, controls })
-    }).then(r=>r.json()).catch(()=>null);
-    const txt = (res?.narrative || res?.long || '').trim();
-    return txt && txt.split('.').filter(Boolean).length ? txt : null;
+}
+function leanFromPct(voice, pct, base){
+  if (voice==='probe' && pct==null) return 'mixed';
+  const p = pct;
+  if (p>=65) return 'yes';
+  if (p<=40) return 'no';
+  if (p>40 && p<55) return 'wait';
+  return 'mixed';
+}
+
+/* ================== COPY RULES ================== */
+function driverText(pct, topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const softened = pct<60;
+  if (softened){
+    return `Move if it still feels right. Use the ${A} to start one obvious slice for ${tb}. Stop on a clean save and reassess ${W}.`;
   }
-
-  /* =============== Local short fallback (2–3 sentences) =============== */
-  function tinyText(pid, decision, topic, seed, pct){
-    const tb = timebox(topic);
-    const A = seed?.artifact || 'note', W = seed?.window || 'tomorrow';
-    const add = (s)=> s.replace(/\s+/g,' ').trim();
-
-    const map = {
-      bold: {
-        yes:  `Say yes. Move now for ${tb}, cut extras, and stop on a win by ${W}.`,
-        no:   `Say no. Close the tab, write one decisive line in the ${A}, and bank the energy for ${W}.`,
-        tiny: `Run a tiny test. One slice, ${tb}, no scope creep; ship or stop by ${W}.`,
-        wait: `Wait. Park it in the ${A}, set a ping for ${W}, and return with fresh eyes.`
-      },
-      cautious: {
-        yes:  `Yes, but cap it. Set a budget and ${tb} limit, add a stop rule in the ${A}, and reassess ${W} morning.`,
-        no:   `Not tonight. Log the top risks in the ${A}, choose a low-effort wind-down, and revisit ${W}.`,
-        tiny: `Test only. Borrow/demo for ${tb}; if no clear pull in five minutes, abort and rest.`,
-        wait: `Hold for a safer window. Title a ${A} with budget + criteria, and wait until ${W}.`
-      },
-      neutral: {
-        yes:  `Proceed if it meets your numbers. While it spins up, prep basics; stop at a measurable checkpoint by ${W}.`,
-        no:   `Pass. Batch two small chores, sleep earlier, and decide with a clearer head ${W}.`,
-        tiny: `Tutorial-only. Timer ${tb}, log “fun/not fun,” then schedule or uninstall.`,
-        wait: `Defer. Set a single price/time alert and move on; you’ll act when it hits the target.`
-      },
-      mystic: {
-        yes:  `If your body says yes, go. Play lightly, end one beat early, and leave a glimmer for ${W}.`,
-        no:   `If the screen feels loud, decline. Brew something quiet and let the night close; the moment returns by ${W}.`,
-        tiny: `Ask for a sign: one small omen, then one path only; stop while it’s warm and listen till ${W}.`,
-        wait: `Hush tonight. Slip the ${A} under a book and wait for a clearer pull by ${W}.`
-      }
-    };
-    const b = pid==='bold'?map.bold:pid==='cautious'?map.cautious:pid==='neutral'?map.neutral:map.mystic;
-    return add(b[decision]);
+  return `Act now. Open the ${A}, push the main slice for ${tb}, and cut extras. Save on progress, quit, and pick up ${W}.`;
+}
+function plannerText(pct, topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const conditionalStart = (seededHash(q) % 2)===0;
+  const open = conditionalStart ? `If you move forward, map first.` : `Map before moving.`;
+  const constraint = `Cap the effort at ${tb} with one checkpoint at halfway.`;
+  const finish = `Log a line in the ${A} and review ${W}.`;
+  return `${open} Break it into a single step, ${constraint} ${finish}`;
+}
+function probeText(topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const q1 = `What exactly are you hoping will change if you do this?`;
+  const q2 = `What would staying put teach you that moving wouldn’t?`;
+  const step = `Try one tiny experiment for ${tb} and write one line in the ${A}; if it warms, schedule time ${W}.`;
+  return `${q1} ${q2} ${step}`;
+}
+function sageText(pct, topic, seed, q){
+  const W = seed.window;
+  // single image budget
+  const image = randFrom(['tide','glimmer','quiet door','low hum','soft light'], seededHash(q));
+  if (pct>=65){
+    return `If the ${image} is steady, begin—and end a step early. Let attention stay soft, not forced. Return ${W} with the echo still warm.`;
   }
-
-  /* =============== Diversity guard =============== */
-  function ngrams(text, n=4){
-    const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
-    const grams=[]; for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
-    return new Set(grams);
+  if (pct<=45){
+    return `If the ${image} dims when you think of it, pause. Let the night be still; timing gathers when you stop tugging. Look again ${W}.`;
   }
-  function distanceOk(text, usedSets){
-    const my = ngrams(text,4);
-    for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
-    return true;
-  }
-  function trimByBounds(txt, min, max){
-    if (txt.length < min) return txt;
-    if (txt.length <= max) return txt;
-    const cut = txt.lastIndexOf('.', max);
-    return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
-  }
+  return `Stand at ease and listen. If the ${image} returns twice, that’s your signal; if it scatters, wait. Either way, notice the timing ${W}.`;
+}
 
-  /* ================== FLOW ================== */
-  function setLoading(on){
-    askBtn.disabled = on; shakeBtn.disabled = on;
-    orbMsg.textContent = on ? "…" : "ASK A QUESTION";
-    if(on) renderPersonaSkeletons();
-  }
-  function distinctArtifacts(topic){
-    const pool = [...(ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general)];
-    return (idx)=> pool[(idx)%pool.length];
-  }
+/* ============ DIVERSITY GUARD ============ */
+function ngrams(text, n=4){
+  const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
+  const grams=[]; for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
+  return new Set(grams);
+}
+function distanceOk(text, usedSets){
+  const my = ngrams(text,4);
+  for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
+  return true;
+}
+function trimByLen(txt, min=60, max=260){
+  if (txt.length<=max) return txt;
+  const cut = txt.lastIndexOf('.', max);
+  return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
+}
 
-  async function renderPersonas(question){
-    setLoading(true);
-    try{
-      const topic = detectTopic(question);
-      const seed  = extractSeed(question, topic);
-      const decisions = assignDecisions(question); // { bold, cautious, neutral, mystic }
-      const baseOdds  = await getBaseOdds(question);
-      const weights   = computeDecisionWeights(baseOdds); // {yes,no,tiny,wait}
-      const artPick   = distinctArtifacts(topic);
-      const usedGrams = [];
+/* ============ RENDER LOOP ============ */
+function setLoading(on){
+  askBtn.disabled = on; shakeBtn.disabled = on;
+  orbMsg.textContent = on ? "…" : "ASK A QUESTION";
+  if(on) renderSkeletons();
+}
 
-      responsesEl.innerHTML = '';
+async function renderVoices(question){
+  setLoading(true);
+  try{
+    const topic = detectTopic(question);
+    const seed = extractSeed(question, topic);
+    const base = baseYes(question, topic);
+    const used = [];
+    responsesEl.innerHTML = '';
 
-      for (let i=0;i<PERSONAS.length;i++){
-        const p = PERSONAS[i];
-        const placeholder = document.createElement('div');
-        placeholder.className = `persona-card skeleton ${cardClass(p.id)}`;
-        placeholder.innerHTML = `
-          <h4><span class="pill">${p.label}</span><span class="pill" style="opacity:.75">Generating…</span></h4>
-          <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
-        `;
-        responsesEl.appendChild(placeholder);
+    // deterministic artifact cycling for regen variety
+    const artPool = [...(ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general)];
+    const artAt = (i)=> artPool[i % artPool.length];
 
-        (async ()=>{
-          const decision = decisions[p.id];           // 'yes' | 'no' | 'tiny' | 'wait'
-          const pct = Math.max(0, Math.min(100, weights[decision] ?? 25));
-          const localSeed = { ...seed, artifact: artPick(i) };
+    VOICES.forEach((v, idx)=>{
+      const placeholder = document.createElement('div');
+      placeholder.className = `persona-card skeleton ${cardClass(v.id)}`;
+      placeholder.innerHTML = `
+        <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+      `;
+      responsesEl.appendChild(placeholder);
 
-          // Try backend (stance enforced); otherwise local short text
-          let text = await fetchPersonaNarrativeV3({
-            question, topic, persona:p, seed:localSeed, decision, pct
-          });
-          if(!text || text.length < 20) text = tinyText(p.id, decision, topic, localSeed, pct);
+      (async()=>{
+        // local synth (you can swap to backend by posting {voice, controls} here)
+        const pct = voicePct(v.id, base);
+        const localSeed = { artifact: artAt(idx), window: seed.window };
 
-          // Anti-echo (light)
-          let tries = 0;
-          while(!distanceOk(text, usedGrams) && tries<2){
-            const twist = p.id==='neutral' ? ' Log one note, then close.'
-                        : p.id==='cautious' ? ' Add a stop rule on paper.'
-                        : p.id==='bold' ? ' Cut extras and move.'
-                        : ' Leave a spark for tomorrow.';
-            text = trimByBounds(text.replace(/\.$/, '') + ' ' + twist, p.minLen, p.maxLen);
-            tries++;
+        let text =
+          v.id==='driver' ? driverText(pct??base, topic, localSeed, question) :
+          v.id==='planner' ? plannerText(pct??base, topic, localSeed, question) :
+          v.id==='probe'   ? probeText(topic, localSeed, question) :
+                             sageText(pct??base, topic, localSeed, question);
+
+        // diversity guard
+        let tries=0;
+        while(!distanceOk(text, used) && tries<2){
+          text = text.replace(/\.$/,'') + (v.id==='probe' ? ' Note what surprised you.' : ' Make it one step smaller.');
+          text = trimByLen(text);
+          tries++;
+        }
+        used.push(ngrams(text,4));
+
+        const card = createCard({
+          voice: v.id,
+          label: v.label,
+          badge: v.badge,
+          pct: (v.id==='probe'? null : pct),
+          text,
+          onClick: async ()=>{
+            // regenerate this voice with rotated artifact
+            const again = { artifact: artAt(idx+1), window: seed.window };
+            const p2 = voicePct(v.id, base);
+            let t2 =
+              v.id==='driver' ? driverText(p2??base, topic, again, question) :
+              v.id==='planner' ? plannerText(p2??base, topic, again, question) :
+              v.id==='probe'   ? probeText(topic, again, question) :
+                                 sageText(p2??base, topic, again, question);
+            card.querySelector('.body').textContent = t2;
+            if (v.id!=='probe') card.querySelector('.odds').textContent = `${p2}%`;
           }
-          usedGrams.push(ngrams(text,4));
+        });
+        placeholder.replaceWith(card);
+      })();
+    });
 
-          const tagMap = { yes:'Yes', no:'No', tiny:'Tiny test', wait:'Wait' };
-          const card = createCard({
-            persona: p.id,
-            label: p.label,
-            tag: tagMap[decision],
-            pct,
-            long: trimByBounds(text, p.minLen, p.maxLen),
-            onClick: async ()=>{
-              const fresh = await fetchPersonaNarrativeV3({
-                question, topic, persona:p, seed:{...localSeed, artifact: artPick(i+1)}, decision, pct
-              }) || tinyText(p.id, decision, topic, {...localSeed, artifact: artPick(i+1)}, pct);
-              const clean = trimByBounds(fresh, p.minLen, p.maxLen);
-              card.querySelector('p').textContent = clean;
-            }
-          });
-          placeholder.replaceWith(card);
-        })();
-      }
-      shakeOrb();
-    } finally {
-      setLoading(false);
-    }
+    shakeOrb();
+  } finally {
+    setLoading(false);
   }
+}
 
-  /* ================== EVENTS ================== */
-  document.getElementById('shake-btn').addEventListener('click', ()=>{
-    const q = inputEl.value.trim() || "Surprise me";
-    renderPersonas(q);
-  });
-  document.getElementById('question-form').addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const q = inputEl.value.trim() || "Surprise me";
-    renderPersonas(q);
-  });
+/* ================== EVENTS ================== */
+document.getElementById('shake-btn').addEventListener('click', ()=>{
+  const q = inputEl.value.trim() || "Surprise me";
+  renderVoices(q);
+});
+document.getElementById('question-form').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const q = inputEl.value.trim() || "Surprise me";
+  renderVoices(q);
+});
 </script>
 </body>
 </html>
+
 
 
 

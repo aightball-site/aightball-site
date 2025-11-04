@@ -51,6 +51,17 @@
     button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
     .helper{ color:var(--muted); text-align:center; margin:.25rem 0 .75rem; }
 
+    /* --- mode toggle --- */
+    .mode-toggle{
+      display:flex; justify-content:center; gap:.5rem; margin:.2rem 0 .8rem;
+    }
+    .seg{
+      padding:.5rem .8rem; border:1px solid var(--border); background:#171717; color:#ddd;
+      border-radius:999px; font-weight:700; font-size:.85rem; cursor:pointer;
+      transition:all .15s ease;
+    }
+    .seg[aria-pressed="true"]{ background:var(--accent); color:var(--ink); border-color:transparent; box-shadow:0 6px 14px rgba(51,204,153,.25); }
+
     .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:440px; overflow:auto; padding:.6rem; }
     .responses-grid{ display:grid; grid-template-columns:1fr; gap:.6rem; }
     @media(min-width:680px){ .responses-grid{ grid-template-columns:1fr 1fr; } }
@@ -107,6 +118,12 @@
     </form>
     <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
 
+    <!-- mode toggle -->
+    <div class="mode-toggle" role="tablist" aria-label="Output mode">
+      <button class="seg" data-mode="story"  role="tab" aria-selected="true"  aria-pressed="true">Story</button>
+      <button class="seg" data-mode="cards"  role="tab" aria-selected="false" aria-pressed="false">Cards</button>
+    </div>
+
     <div class="responses-wrap" aria-live="polite">
       <div id="responses" class="responses-grid"></div>
     </div>
@@ -126,6 +143,23 @@ const inputEl = document.getElementById('user-question');
 const askBtn = document.querySelector('#question-form button[type="submit"]');
 const shakeBtn = document.getElementById('shake-btn');
 const responsesEl = document.getElementById('responses');
+const modeBtns = document.querySelectorAll('.seg[data-mode]');
+
+/* ============== MODE (Story or Cards) ============== */
+let MODE = 'story'; // default
+
+modeBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    MODE = btn.dataset.mode;
+    modeBtns.forEach(b=>{
+      const active = b.dataset.mode===MODE;
+      b.setAttribute('aria-selected', active);
+      b.setAttribute('aria-pressed', active);
+    });
+    // re-render current answer in the new mode if something is on screen
+    if (responsesEl.innerHTML.trim()) askOrShake();
+  });
+});
 
 /* ================== OUTCOME TIERS (Unified Voice) ================== */
 // We keep four cards for layout parity, but they're narrative outcome tiers, not personas.
@@ -143,8 +177,18 @@ function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h
 function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
 function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
 
-function renderSkeletons(){
+function renderSkeletons(mode='cards'){
   responsesEl.innerHTML = '';
+  if(mode==='story'){
+    const div = document.createElement('div');
+    div.className = `persona-card skeleton card--driver`;
+    div.innerHTML = `
+      <div class="head"><span class="pill role">Story</span><span class="pill" style="opacity:.75">Generating…</span></div>
+      <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+    `;
+    responsesEl.appendChild(div);
+    return;
+  }
   TIERS.forEach(t=>{
     const div = document.createElement('div');
     div.className = `persona-card skeleton ${t.cardClass}`;
@@ -216,7 +260,6 @@ function extractSeed(question, topic){
 
 /* ================== PROBABILITY MODEL (Unified) ================== */
 function baseTilt(q, topic){
-  // Similar to prior baseYes, but used as a directional prior for the main path.
   let b=50, s=q.toLowerCase();
   if (s.includes('should i')) b+=4;
   if (s.includes('now')||s.includes('today')) b+=2;
@@ -230,29 +273,16 @@ function baseTilt(q, topic){
 }
 
 function allocateProbabilities(q, topic){
-  const base = baseTilt(q, topic); // 0-100
+  const base = baseTilt(q, topic);
   const seed = seededHash(q);
-  // Primary between 55–75 if base>50, else 45–60; keep realistic spread
   const main = base>=50
     ? Math.min(80, Math.max(55, base + ((seed%13)-6)))
     : Math.max(40, Math.min(60, base + ((seed%9)-4)));
-
-  // Secondary 20–35, influenced inversely by main
   const alt = Math.max(15, Math.min(35, 100 - main - (seed%15)));
-
-  // Rare gets 5–15, remainder goes to xfactor
   let rare = Math.max(5, Math.min(15, (seed%11)+5));
   let x = Math.max(0, 100 - Math.round(main) - Math.round(alt) - Math.round(rare));
-
-  // Occasionally suppress X-factor to 0 for cleaner 3-path read
   if ((seed%7)===0){ x = 0; rare += Math.min(5, 100 - (Math.round(main)+Math.round(alt)+Math.round(rare))); }
-
-  return {
-    common:   Math.round(main),
-    uncommon: Math.round(alt),
-    rare:     Math.round(rare),
-    xfactor:  Math.round(x)
-  };
+  return { common:Math.round(main), uncommon:Math.round(alt), rare:Math.round(rare), xfactor:Math.round(x) };
 }
 
 /* ================== NARRATIVE COPY (Unified Voice) ================== */
@@ -271,7 +301,6 @@ function sceneBits(topic){
   };
   return places[topic]||places.general;
 }
-
 function commonText(pct, topic, seed, q){
   const tb = timebox(topic), A=seed.artifact, bits = sceneBits(topic);
   return `Most paths lead here (${pct}%). You open the ${A}, set a ${tb} window, and the first win arrives sooner than your doubt expects — a ${randFrom(bits, seededHash(q))} that signals you’re on the right thread. Keep the tempo ${seed.tempo}; end one step early so tomorrow has a runway.`;
@@ -290,28 +319,28 @@ function xfactorText(pct, topic, seed, q){
   return `The wildcard (${pct}%) isn’t predictable, but it is usable. Expect an external jolt — a policy shift, an unexpected ally, or a ${randFrom(bits, seededHash('x'+q))}. Treat it as acceleration, not a new destination.`;
 }
 
-/* ============ DIVERSITY GUARD ============ */
-function ngrams(text, n=4){
-  const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
-  const grams=[]; for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
-  return new Set(grams);
-}
-function distanceOk(text, usedSets){
-  const my = ngrams(text,4);
-  for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
-  return true;
-}
-function trimByLen(txt, min=60, max=360){
-  if (txt.length<=max) return txt;
-  const cut = txt.lastIndexOf('.', max);
-  return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
+/* ============== Single Story Builder ============== */
+function storyText(question, topic, seed, pct) {
+  const tb = timebox(topic);
+  const budgetLine = (topic==='money'||topic==='work') ? ' Set a hard monthly budget and match your shifts to it.' : '';
+  const common = pct.common, alt = pct.uncommon, rare = pct.rare, x = pct.xfactor;
+
+  const opener = `You choose the new lane and start with a focused ${tb} push each day.`;
+  const main = `This is the most likely thread (~${common}%). You ramp through basics, get one visible win each week, and a lead trusts you with real responsibility. Expect a pay/time trade-off; plan for it.${budgetLine}`;
+  const altPath = `There’s an alternate arc (~${alt}%) where the grind outruns the romance. You pivot into an adjacent lane (schedule tweak, pop-up cadence, or different shop) without losing momentum.`;
+  const longShot = `The long shot (~${rare}%) arrives via leverage: a mentor, a review, or a clip that travels. If it appears, compress the rest of life for 6–8 weeks and turn attention into customers (emails, preorders, sourcing locked).`;
+  const wildcard = x>0 ? `Wildcard (~${x}%): external shock forces a pause. Bank the skills, keep one weekly rep alive, and rebuild a 12-month runway for attempt two.` : `No strong wildcards detected in this read.`;
+
+  const closer = `What decides the path? A real budget, a schedule you can sleep through, one shipped thing per week, and a mentor who’ll slow you down when jumping early would cost you momentum.`;
+
+  return `${opener}\n\n${main}\n\n${altPath}\n\n${longShot}\n\n${wildcard}\n\n${closer}`;
 }
 
 /* ============ RENDER LOOP ============ */
 function setLoading(on){
   askBtn.disabled = on; shakeBtn.disabled = on;
   orbMsg.textContent = on ? "…" : "ASK A QUESTION";
-  if(on) renderSkeletons();
+  if(on) renderSkeletons(MODE==='story' ? 'story' : 'cards');
 }
 
 async function renderForecast(question){
@@ -325,7 +354,7 @@ async function renderForecast(question){
 
     const tiersInOrder = ['common','uncommon','rare','xfactor'];
 
-    tiersInOrder.forEach((key, idx)=>{
+    tiersInOrder.forEach((key)=>{
       const t = TIERS.find(x=>x.id===key);
       const placeholder = document.createElement('div');
       placeholder.className = `persona-card skeleton ${t.cardClass}`;
@@ -360,7 +389,6 @@ async function renderForecast(question){
           pct: pct[key]>0? pct[key] : null,
           text,
           onClick: async ()=>{
-            // regenerate with slight time/window remix for variety
             const remix = { ...seed, window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ ((seededHash(key+Date.now())>>>3)%6) ] };
             let t2;
             if (key==='common')   t2 = commonText(pct[key], topic, remix, question);
@@ -380,14 +408,44 @@ async function renderForecast(question){
   }
 }
 
+async function renderStory(question){
+  setLoading(true);
+  try{
+    const topic = detectTopic(question);
+    const seed  = extractSeed(question, topic);
+    const pct   = allocateProbabilities(question, topic);
+    responsesEl.innerHTML = '';
+
+    const div = document.createElement('div');
+    div.className = 'persona-card card--driver';
+    const total = pct.common + pct.uncommon + pct.rare + pct.xfactor;
+    div.innerHTML = `
+      <div class="head">
+        <span class="pill role">Story</span>
+        <span class="pill">Unified</span>
+        <span class="odds">${total}%</span>
+      </div>
+      <p class="body">${storyText(question, topic, seed, pct)}</p>
+      <div class="helper" style="margin-top:.4rem">Tap to regenerate this story</div>
+    `;
+    div.addEventListener('click', ()=>{
+      const remix = { ...seed, window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ ((seededHash(Date.now().toString())>>>3)%6) ] };
+      div.querySelector('.body').textContent = storyText(question, topic, remix, pct);
+    });
+
+    responsesEl.appendChild(div);
+    shakeOrb();
+  } finally {
+    setLoading(false);
+  }
+}
+
 /* ================== EVENTS ================== */
 function askOrShake(){
   const q = inputEl.value.trim() || "Surprise me";
-  renderForecast(q);
+  (MODE==='story') ? renderStory(q) : renderForecast(q);
 }
-
 document.getElementById('shake-btn').addEventListener('click', askOrShake);
-
 document.getElementById('question-form').addEventListener('submit', (e)=>{
   e.preventDefault();
   askOrShake();
@@ -395,6 +453,7 @@ document.getElementById('question-form').addEventListener('submit', (e)=>{
 </script>
 </body>
 </html>
+
 
 
 

@@ -8,8 +8,7 @@
     :root{
       --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#111; --border:#333;
       --accent:#33cc99; --accent-hover:#2ab386;
-      /* keep existing accent palette for borders */
-      --driver:#2dd4bf; --planner:#f2c94c; --probe:#7aa0b4; --sage:#a78bfa;
+      --driver:#2dd4bf; --planner:#f2c94c; --probe:#7aa0b4; --sage:#a78bfa; /* used for card borders */
       --ink:#04110d;
     }
     *{ box-sizing:border-box; }
@@ -51,20 +50,17 @@
     button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
     .helper{ color:var(--muted); text-align:center; margin:.25rem 0 .75rem; }
 
-    /* --- mode toggle --- */
-    .mode-toggle{
-      display:flex; justify-content:center; gap:.5rem; margin:.2rem 0 .8rem;
-    }
+    /* Toggle */
+    .mode-toggle{ display:flex; justify-content:center; gap:.5rem; margin:.2rem 0 .8rem; }
     .seg{
       padding:.5rem .8rem; border:1px solid var(--border); background:#171717; color:#ddd;
-      border-radius:999px; font-weight:700; font-size:.85rem; cursor:pointer;
-      transition:all .15s ease;
+      border-radius:999px; font-weight:700; font-size:.85rem; cursor:pointer; transition:all .15s ease;
     }
     .seg[aria-pressed="true"]{ background:var(--accent); color:var(--ink); border-color:transparent; box-shadow:0 6px 14px rgba(51,204,153,.25); }
 
-    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:440px; overflow:auto; padding:.6rem; }
+    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:540px; overflow:auto; padding:.6rem; }
     .responses-grid{ display:grid; grid-template-columns:1fr; gap:.6rem; }
-    @media(min-width:680px){ .responses-grid{ grid-template-columns:1fr 1fr; } }
+    @media(min-width:680px){ .responses-grid.cards{ grid-template-columns:1fr 1fr; } } /* 2-col only for cards */
 
     .persona-card{
       border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .95rem;
@@ -78,11 +74,10 @@
     .odds{ margin-left:auto; font-weight:900; font-size:.95rem; color:#cfcfcf; }
     .body{ margin:0; color:#e6e6e6; line-height:1.5; white-space:pre-wrap; }
 
-    /* keep existing border color hooks */
-    .card--driver{ border-color:rgba(45,212,191,.35); }
-    .card--planner{ border-color:rgba(242,201,76,.35); }
-    .card--probe{ border-color:rgba(122,160,180,.35); }
-    .card--sage{ border-color:rgba(167,139,250,.35); }
+    .card--driver{ border-color:rgba(45,212,191,.35); } /* story & likely */
+    .card--planner{ border-color:rgba(242,201,76,.35); } /* alternate */
+    .card--probe{ border-color:rgba(122,160,180,.35); } /* long shot */
+    .card--sage{ border-color:rgba(167,139,250,.35); }  /* wildcard */
 
     .skeleton{ position:relative; overflow:hidden; }
     .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
@@ -136,7 +131,7 @@
   </footer>
 
 <script>
-/* ================== DOM HOOKS ================== */
+/* ================== DOM ================== */
 const orb = document.getElementById('orb');
 const orbMsg = document.getElementById('orb-msg');
 const inputEl = document.getElementById('user-question');
@@ -144,8 +139,6 @@ const askBtn = document.querySelector('#question-form button[type="submit"]');
 const shakeBtn = document.getElementById('shake-btn');
 const responsesEl = document.getElementById('responses');
 const modeBtns = document.querySelectorAll('.seg[data-mode]');
-
-/* ============== MODE (Story or Cards) ============== */
 let MODE = 'story'; // default
 
 modeBtns.forEach(btn=>{
@@ -156,303 +149,123 @@ modeBtns.forEach(btn=>{
       b.setAttribute('aria-selected', active);
       b.setAttribute('aria-pressed', active);
     });
-    // re-render current answer in the new mode if something is on screen
     if (responsesEl.innerHTML.trim()) askOrShake();
   });
 });
 
-/* ================== OUTCOME TIERS (Unified Voice) ================== */
-// We keep four cards for layout parity, but they're narrative outcome tiers, not personas.
-const TIERS = [
-  { id:'common',   label:'Likely',     badge:'Main Path',   color:'var(--driver)',   cardClass:'card--driver'   },
-  { id:'uncommon', label:'Alternate',  badge:'Second Path', color:'var(--planner)',  cardClass:'card--planner'  },
-  { id:'rare',     label:'Long Shot',  badge:'Third Path',  color:'var(--probe)',    cardClass:'card--probe'    },
-  { id:'xfactor',  label:'Wildcard',   badge:'X-Factor',    color:'var(--sage)',     cardClass:'card--sage'     },
-];
-
-/* ================== UTIL ================== */
+/* ================== UI helpers ================== */
 function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
-function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
-function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
-function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
-
-function renderSkeletons(mode='cards'){
-  responsesEl.innerHTML = '';
-  if(mode==='story'){
-    const div = document.createElement('div');
-    div.className = `persona-card skeleton card--driver`;
-    div.innerHTML = `
-      <div class="head"><span class="pill role">Story</span><span class="pill" style="opacity:.75">Generating…</span></div>
-      <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
-    `;
-    responsesEl.appendChild(div);
-    return;
+function setLoading(on){
+  askBtn.disabled = on; shakeBtn.disabled = on;
+  orbMsg.textContent = on ? "…" : "ASK A QUESTION";
+  responsesEl.className = 'responses-grid ' + (MODE==='cards' ? 'cards' : '');
+  if(on){
+    responsesEl.innerHTML = '';
+    const skeleton = (cls,label)=>`
+      <div class="persona-card skeleton ${cls}">
+        <div class="head"><span class="pill role">${label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+      </div>`;
+    responsesEl.innerHTML = MODE==='story'
+      ? skeleton('card--driver','Story')
+      : [skeleton('card--driver','Likely'),skeleton('card--planner','Alternate'),skeleton('card--probe','Long Shot'),skeleton('card--sage','Wildcard')].join('');
   }
-  TIERS.forEach(t=>{
+}
+
+/* ================== RENDERERS ================== */
+function renderStory(data){
+  const card = document.createElement('div');
+  card.className = 'persona-card card--driver';
+  const total = (data.outcomes||[]).reduce((s,o)=>s+(o.percent||0),0);
+  card.innerHTML = `
+    <div class="head">
+      <span class="pill role">Story</span>
+      <span class="pill">Unified</span>
+      <span class="odds">${total}%</span>
+    </div>
+    <p class="body">${(data.story||'').trim()}</p>
+    <div class="helper" style="margin-top:.4rem">Tap to regenerate this story</div>
+  `;
+  // simple re-render on click (re-ask)
+  card.addEventListener('click', askOrShake);
+  responsesEl.innerHTML = '';
+  responsesEl.appendChild(card);
+  // Optional: append deciders as a small list
+  if (Array.isArray(data.deciders) && data.deciders.length){
+    const meta = document.createElement('div');
+    meta.className = 'persona-card';
+    meta.style.borderColor = 'rgba(255,255,255,.08)';
+    meta.innerHTML = `
+      <div class="head"><span class="pill role">What tips the odds</span></div>
+      <p class="body">• ${data.deciders.join('<br>• ')}</p>`;
+    responsesEl.appendChild(meta);
+  }
+}
+
+function renderCards(data){
+  responsesEl.innerHTML = '';
+  const map = {
+    'likely':'card--driver', 'most likely':'card--driver',
+    'alternate':'card--planner',
+    'long shot':'card--probe',
+    'wildcard':'card--sage'
+  };
+  (data.outcomes||[]).forEach(o=>{
     const div = document.createElement('div');
-    div.className = `persona-card skeleton ${t.cardClass}`;
+    const cls = map[(o.label||'').toLowerCase()] || 'card--driver';
+    div.className = `persona-card ${cls}`;
     div.innerHTML = `
-      <div class="head"><span class="pill role">${t.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
-      <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+      <div class="head">
+        <span class="pill role">${o.label || 'Outcome'}</span>
+        <span class="pill">${(o.percent ?? '—')}%</span>
+        <span class="odds"></span>
+      </div>
+      <p class="body">${Array.isArray(o.beats)? '• ' + o.beats.join('<br>• ') : ''}</p>
+      <div class="helper" style="margin-top:.4rem">Tap to regenerate this card</div>
     `;
+    div.addEventListener('click', askOrShake);
     responsesEl.appendChild(div);
   });
 }
 
-function createCard({tier, label, badge, pct, text, onClick}){
-  const div = document.createElement('div');
-  div.className = `persona-card ${tier.cardClass}`;
-  const pctStr = (typeof pct === 'number') ? `${pct}%` : '—';
-  div.innerHTML = `
-    <div class="head">
-      <span class="pill role">${label}</span>
-      <span class="pill">${badge}</span>
-      <span class="odds">${pctStr}</span>
-    </div>
-    <p class="body">${text}</p>
-    <div class="helper" style="margin-top:.4rem">Tap to regenerate this card</div>
-  `;
-  div.addEventListener('click', onClick);
-  return div;
-}
-
-/* ================== TOPIC + CONTEXT ================== */
-const ARTIFACT_POOLS = {
-  work:['Slack DM','email draft','ticket','calendar block','deck slide'],
-  relationship:['text message','voice note','coffee invite','note'],
-  food:['pan','bowl','order ticket','recipe note'],
-  health:['timer','water bottle','doctor note','walk route'],
-  money:['budget line','cart','limit note','transfer'],
-  creative:['script stub','thumbnail','draft file','outline'],
-  travel:['booking tab','packing list','route card','note'],
-  tech:['settings pane','backup','update list','repo'],
-  philosophy:['journal line','sticky note','breath count'],
-  general:['note','list','tab','timer']
-};
-
-function detectTopic(q){
-  const s=q.toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
-  if (has('boss','promotion','raise','job','coworker','department','sabbatical','work','school','degree','career')) return 'work';
-  if (has('invest','house','rent','car','laptop','loans','side hustle','interest','loan','warranty','crypto','budget')) return 'money';
-  if (has('ex','friend','relationship','love','reunion','forgive','apologize','move in','partner','honest','peace')) return 'relationship';
-  if (has('sick','gym','caffeine','therapy','breakfast','meditation','doctor','rest','social-media','cold','health')) return 'health';
-  if (has('dinner','cook','order','vegetarian','groceries','meal','sugar','eat','fasting','coffee')) return 'food';
-  if (has('trip','vacation','travel','ticket','flying','drive','camping','eclipse','abroad')) return 'travel';
-  if (has('youtube','podcast','book','art','guitar','piano','streaming','workspace','creative','painting','poetry')) return 'creative';
-  if (has('dream','passion','path','happiness','purpose','potential','control','balance','intuition')) return 'philosophy';
-  if (has('tiktok','ai','phone','unplug','apps','linux','resume','budget tracking','pc')) return 'tech';
-  return 'general';
-}
-function timebox(topic){
-  return ({work:'25 minutes', food:'40 minutes', relationship:'15 minutes', health:'20 minutes', money:'10 minutes',
-    creative:'30 minutes', travel:'20 minutes', tech:'15 minutes', philosophy:'10 minutes', general:'20 minutes'})[topic]||'20 minutes';
-}
-function extractSeed(question, topic){
-  const seed = seededHash(question+nowBucket());
-  const art = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
-  return {
-    artifact: art[seed % art.length],
-    window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ],
-    tempo: ['steady cadence','short sprints','slow build','weekend push','late-night focus'][ (seed>>>6)%5 ]
-  };
-}
-
-/* ================== PROBABILITY MODEL (Unified) ================== */
-function baseTilt(q, topic){
-  let b=50, s=q.toLowerCase();
-  if (s.includes('should i')) b+=4;
-  if (s.includes('now')||s.includes('today')) b+=2;
-  if (/(quit|end|sell|delete|cut out)/.test(s)) b-=6;
-  if (/(start|try|begin|learn)/.test(s)) b+=6;
-  if (/(wait|later|too soon)/.test(s)) b-=4;
-  const topicBias = {work:0, money:-2, relationship:-2, health:3, food:2, travel:1, creative:4, tech:0, philosophy:0, general:0}[topic]||0;
-  b+=topicBias;
-  const jitter = ((seededHash(q+topic) % 11) - 5);
-  return Math.max(5, Math.min(95, b+jitter));
-}
-
-function allocateProbabilities(q, topic){
-  const base = baseTilt(q, topic);
-  const seed = seededHash(q);
-  const main = base>=50
-    ? Math.min(80, Math.max(55, base + ((seed%13)-6)))
-    : Math.max(40, Math.min(60, base + ((seed%9)-4)));
-  const alt = Math.max(15, Math.min(35, 100 - main - (seed%15)));
-  let rare = Math.max(5, Math.min(15, (seed%11)+5));
-  let x = Math.max(0, 100 - Math.round(main) - Math.round(alt) - Math.round(rare));
-  if ((seed%7)===0){ x = 0; rare += Math.min(5, 100 - (Math.round(main)+Math.round(alt)+Math.round(rare))); }
-  return { common:Math.round(main), uncommon:Math.round(alt), rare:Math.round(rare), xfactor:Math.round(x) };
-}
-
-/* ================== NARRATIVE COPY (Unified Voice) ================== */
-function sceneBits(topic){
-  const places = {
-    work:['inbox ping','desk lamp','whiteboard edge','calendar chime','Slack sidebar'],
-    relationship:['doorway pause','hands warming a mug','sidewalk corner','open tab left unsent','quiet room'],
-    food:['warm pan','grocery aisle','steam from a bowl','recipe margin','timer beep'],
-    health:['shoelace knot','cold water glass','stretch in the doorway','sunlight on the floor','heartbeat settling'],
-    money:['budget cell turning green','order summary','checkout button hover','account alert','transfer note'],
-    creative:['cursor blink','scrap of melody','thumbnail draft','scene card','margin doodle'],
-    travel:['open booking tab','packed duffel','printed route','gate display','weather check'],
-    tech:['toggle in settings','progress bar','backup prompt','commit message','patch notes'],
-    philosophy:['journal margin','breath count','window reflection','page fold','late-night hush'],
-    general:['open tab','sticky note','quiet hallway','phone buzz','evening light']
-  };
-  return places[topic]||places.general;
-}
-function commonText(pct, topic, seed, q){
-  const tb = timebox(topic), A=seed.artifact, bits = sceneBits(topic);
-  return `Most paths lead here (${pct}%). You open the ${A}, set a ${tb} window, and the first win arrives sooner than your doubt expects — a ${randFrom(bits, seededHash(q))} that signals you’re on the right thread. Keep the tempo ${seed.tempo}; end one step early so tomorrow has a runway.`;
-}
-function uncommonText(pct, topic, seed, q){
-  const A=seed.artifact, bits = sceneBits(topic);
-  return `The alternate arc (${pct}%) starts with friction. A detail doesn’t click — a ${randFrom(bits, seededHash('u'+q))} you can’t ignore. You pivot once, trim scope in the ${A}, and the story slows without stalling. It still lands, just later than you planned.`;
-}
-function rareText(pct, topic, seed, q){
-  const bits = sceneBits(topic);
-  return `The long shot (${pct}%) snaps into place when chance intervenes — a stranger’s note, a lucky timing window, or a ${randFrom(bits, seededHash('r'+q))} that becomes the hinge. If it appears, drop what can wait and ride the break.`;
-}
-function xfactorText(pct, topic, seed, q){
-  if (!pct || pct<=0) return `Dormant in this reading — no meaningful wildcards detected. If one arrives, it’ll announce itself loudly.`;
-  const bits = sceneBits(topic);
-  return `The wildcard (${pct}%) isn’t predictable, but it is usable. Expect an external jolt — a policy shift, an unexpected ally, or a ${randFrom(bits, seededHash('x'+q))}. Treat it as acceleration, not a new destination.`;
-}
-
-/* ============== Single Story Builder ============== */
-function storyText(question, topic, seed, pct) {
-  const tb = timebox(topic);
-  const budgetLine = (topic==='money'||topic==='work') ? ' Set a hard monthly budget and match your shifts to it.' : '';
-  const common = pct.common, alt = pct.uncommon, rare = pct.rare, x = pct.xfactor;
-
-  const opener = `You choose the new lane and start with a focused ${tb} push each day.`;
-  const main = `This is the most likely thread (~${common}%). You ramp through basics, get one visible win each week, and a lead trusts you with real responsibility. Expect a pay/time trade-off; plan for it.${budgetLine}`;
-  const altPath = `There’s an alternate arc (~${alt}%) where the grind outruns the romance. You pivot into an adjacent lane (schedule tweak, pop-up cadence, or different shop) without losing momentum.`;
-  const longShot = `The long shot (~${rare}%) arrives via leverage: a mentor, a review, or a clip that travels. If it appears, compress the rest of life for 6–8 weeks and turn attention into customers (emails, preorders, sourcing locked).`;
-  const wildcard = x>0 ? `Wildcard (~${x}%): external shock forces a pause. Bank the skills, keep one weekly rep alive, and rebuild a 12-month runway for attempt two.` : `No strong wildcards detected in this read.`;
-
-  const closer = `What decides the path? A real budget, a schedule you can sleep through, one shipped thing per week, and a mentor who’ll slow you down when jumping early would cost you momentum.`;
-
-  return `${opener}\n\n${main}\n\n${altPath}\n\n${longShot}\n\n${wildcard}\n\n${closer}`;
-}
-
-/* ============ RENDER LOOP ============ */
-function setLoading(on){
-  askBtn.disabled = on; shakeBtn.disabled = on;
-  orbMsg.textContent = on ? "…" : "ASK A QUESTION";
-  if(on) renderSkeletons(MODE==='story' ? 'story' : 'cards');
-}
-
-async function renderForecast(question){
-  setLoading(true);
-  try{
-    const topic = detectTopic(question);
-    const seed = extractSeed(question, topic);
-    const pct = allocateProbabilities(question, topic);
-    const used = [];
-    responsesEl.innerHTML = '';
-
-    const tiersInOrder = ['common','uncommon','rare','xfactor'];
-
-    tiersInOrder.forEach((key)=>{
-      const t = TIERS.find(x=>x.id===key);
-      const placeholder = document.createElement('div');
-      placeholder.className = `persona-card skeleton ${t.cardClass}`;
-      placeholder.innerHTML = `
-        <div class="head"><span class="pill role">${t.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
-        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
-      `;
-      responsesEl.appendChild(placeholder);
-
-      (async()=>{
-        const makeText = (tierKey)=>{
-          const p = pct[tierKey];
-          if (tierKey==='common')   return commonText(p, topic, seed, question);
-          if (tierKey==='uncommon') return uncommonText(p, topic, seed, question);
-          if (tierKey==='rare')     return rareText(p, topic, seed, question);
-          return xfactorText(p, topic, seed, question);
-        };
-
-        let text = makeText(key);
-        let tries=0;
-        while(!distanceOk(text, used) && tries<2){
-          text = text.replace(/\.$/,'') + ' — tighten one more notch.';
-          text = trimByLen(text);
-          tries++;
-        }
-        used.push(ngrams(text,4));
-
-        const card = createCard({
-          tier: t,
-          label: t.label,
-          badge: t.badge,
-          pct: pct[key]>0? pct[key] : null,
-          text,
-          onClick: async ()=>{
-            const remix = { ...seed, window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ ((seededHash(key+Date.now())>>>3)%6) ] };
-            let t2;
-            if (key==='common')   t2 = commonText(pct[key], topic, remix, question);
-            else if (key==='uncommon') t2 = uncommonText(pct[key], topic, remix, question);
-            else if (key==='rare')     t2 = rareText(pct[key], topic, remix, question);
-            else                        t2 = xfactorText(pct[key], topic, remix, question);
-            card.querySelector('.body').textContent = t2;
-          }
-        });
-        placeholder.replaceWith(card);
-      })();
-    });
-
-    shakeOrb();
-  } finally {
-    setLoading(false);
-  }
-}
-
-async function renderStory(question){
-  setLoading(true);
-  try{
-    const topic = detectTopic(question);
-    const seed  = extractSeed(question, topic);
-    const pct   = allocateProbabilities(question, topic);
-    responsesEl.innerHTML = '';
-
-    const div = document.createElement('div');
-    div.className = 'persona-card card--driver';
-    const total = pct.common + pct.uncommon + pct.rare + pct.xfactor;
-    div.innerHTML = `
-      <div class="head">
-        <span class="pill role">Story</span>
-        <span class="pill">Unified</span>
-        <span class="odds">${total}%</span>
-      </div>
-      <p class="body">${storyText(question, topic, seed, pct)}</p>
-      <div class="helper" style="margin-top:.4rem">Tap to regenerate this story</div>
-    `;
-    div.addEventListener('click', ()=>{
-      const remix = { ...seed, window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ ((seededHash(Date.now().toString())>>>3)%6) ] };
-      div.querySelector('.body').textContent = storyText(question, topic, remix, pct);
-    });
-
-    responsesEl.appendChild(div);
-    shakeOrb();
-  } finally {
-    setLoading(false);
-  }
+/* ================== DATA FETCH ================== */
+// Replace '/api/forecast' with your actual endpoint.
+async function getForecast(question){
+  const res = await fetch('/api/forecast', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ question, style:'narrative', return_schema:'json_v1' })
+  });
+  if(!res.ok) throw new Error('API error');
+  return await res.json();
 }
 
 /* ================== EVENTS ================== */
-function askOrShake(){
+async function askOrShake(){
   const q = inputEl.value.trim() || "Surprise me";
-  (MODE==='story') ? renderStory(q) : renderForecast(q);
+  setLoading(true);
+  try{
+    const data = await getForecast(q);
+    if (MODE==='story') renderStory(data); else renderCards(data);
+    shakeOrb();
+  } catch (e){
+    responsesEl.innerHTML = `
+      <div class="persona-card" style="border-color:#703;">
+        <div class="head"><span class="pill role">Error</span></div>
+        <p class="body">Couldn’t reach the AI service. ${e?.message || ''}</p>
+      </div>`;
+  } finally {
+    setLoading(false);
+  }
 }
+
 document.getElementById('shake-btn').addEventListener('click', askOrShake);
-document.getElementById('question-form').addEventListener('submit', (e)=>{
-  e.preventDefault();
-  askOrShake();
-});
+document.getElementById('question-form').addEventListener('submit', (e)=>{ e.preventDefault(); askOrShake(); });
 </script>
 </body>
 </html>
+
+
 
 
 

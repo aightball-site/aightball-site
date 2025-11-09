@@ -1,269 +1,348 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AIght Ball – Voice Model Test</title>
   <title>AIght Ball – Narrative Forecast</title>
   <style>
     :root{
       --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#111; --border:#333;
       --accent:#33cc99; --accent-hover:#2ab386;
-      --driver:#2dd4bf; --planner:#f2c94c; --probe:#7aa0b4; --sage:#a78bfa; /* used for card borders */
+      /* keep existing accent palette for borders */
+      --driver:#2dd4bf; --planner:#f2c94c; --probe:#7aa0b4; --sage:#a78bfa;
       --ink:#04110d;
     }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0; font-family:Inter,system-ui,Arial,Helvetica,sans-serif;
-      background:radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
-      color:var(--fg); min-height:100vh; display:grid;
-      grid-template-rows:auto auto 1fr auto; align-items:start;
-    }
-    .hero{ display:grid; place-items:center; padding:2rem 1.25rem .5rem; }
-    .hero img{ width:min(70vw,520px); max-height:45vh; object-fit:contain; border-radius:20px;
-      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none; }
-
-    .demo{ margin:.5rem auto 0; padding:1.25rem 1.1rem 1.6rem; border:1px solid var(--border);
-      border-radius:18px; width:min(92vw, 760px); background:linear-gradient(180deg,#121212,var(--card));
-      box-shadow:0 24px 50px rgba(0,0,0,.35);
-    }
-
-    .oracle-wrap{ display:grid; place-items:center; margin-bottom:.75rem; }
-    .eightball{ width:min(64vw,320px); height:min(64vw,320px); border-radius:50%;
-      background:radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
-      box-shadow:inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
-      display:grid; place-items:center; overflow:hidden; transition:transform .2s cubic-bezier(.2,.8,.2,1); }
-    .eightball .window{ width:50%; height:50%; border-radius:50%; display:grid; place-items:center;
-      background:radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
-      border:2px solid #0f2a3a; box-shadow:inset 0 0 40px rgba(0,0,0,.9); }
-    .window .triangle{ position:relative; width:0; height:0; border-left:80px solid transparent; border-right:80px solid transparent; border-top:120px solid #163a5a; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); }
-    .triangle .msg{ position:absolute; top:-82px; left:50%; transform:translateX(-50%);
-      width:120px; text-align:center; font-weight:800; font-size:1.05rem; letter-spacing:.4px; color:#cde7ff; text-shadow:0 1px 0 rgba(0,0,0,.5); }
-
-    .qa{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0 .4rem; }
-    input[type="text"]{
-      padding:.85rem .95rem; border:none; border-radius:10px; min-width:300px; background:#1a1a1a; color:#fff; outline:1px solid var(--border);
-    }
-    button{
-      padding:.9rem 1.1rem; border:none; border-radius:12px; background:var(--accent); color:var(--ink); font-weight:800; cursor:pointer;
-      transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
-    }
-    button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
-    .helper{ color:var(--muted); text-align:center; margin:.25rem 0 .75rem; }
-
-    /* Toggle */
-    .mode-toggle{ display:flex; justify-content:center; gap:.5rem; margin:.2rem 0 .8rem; }
-    .seg{
-      padding:.5rem .8rem; border:1px solid var(--border); background:#171717; color:#ddd;
-      border-radius:999px; font-weight:700; font-size:.85rem; cursor:pointer; transition:all .15s ease;
-    }
-    .seg[aria-pressed="true"]{ background:var(--accent); color:var(--ink); border-color:transparent; box-shadow:0 6px 14px rgba(51,204,153,.25); }
-
-    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:540px; overflow:auto; padding:.6rem; }
-    .responses-grid{ display:grid; grid-template-columns:1fr; gap:.6rem; }
-    @media(min-width:680px){ .responses-grid.cards{ grid-template-columns:1fr 1fr; } } /* 2-col only for cards */
-
-    .persona-card{
-      border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .95rem;
-      background:linear-gradient(180deg, #141414, #0f0f0f);
-      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease; cursor:pointer;
-    }
-    .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
-    .head{ display:flex; align-items:center; gap:.5rem; margin:0 0 .35rem; }
-    .pill{ display:inline-flex; align-items:center; gap:.35rem; font-weight:800; padding:.16rem .55rem; border-radius:999px; background:var(--accent); color:var(--ink); font-size:.78rem; text-transform:uppercase; letter-spacing:.3px; }
-    .pill.role{ background:#222; color:#ddd; font-weight:700; }
+@@ -66,6 +67,7 @@
     .odds{ margin-left:auto; font-weight:900; font-size:.95rem; color:#cfcfcf; }
     .body{ margin:0; color:#e6e6e6; line-height:1.5; white-space:pre-wrap; }
 
-    .card--driver{ border-color:rgba(45,212,191,.35); } /* story & likely */
-    .card--planner{ border-color:rgba(242,201,76,.35); } /* alternate */
-    .card--probe{ border-color:rgba(122,160,180,.35); } /* long shot */
-    .card--sage{ border-color:rgba(167,139,250,.35); }  /* wildcard */
-
-    .skeleton{ position:relative; overflow:hidden; }
-    .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
-    .skeleton .line.wide{ width:92%; } .skeleton .line.med{ width:75%; } .skeleton .line.short{ width:55%; }
-    .skeleton::after{ content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
-      animation:shimmer 1.2s infinite; }
-    @keyframes shimmer{ 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
-
-    footer{ margin:1.25rem 0 1.5rem; text-align:center; color:#8a8a8a; font-size:.95rem; }
-    a{ color:var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
-    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-    .shake{ animation:wobble .6s ease-in-out; } @keyframes wobble{
-      0%{transform:rotate(0) translateX(0)}20%{transform:rotate(3deg) translateX(6px)}
-      40%{transform:rotate(-3deg) translateX(-6px)}60%{transform:rotate(2deg) translateX(4px)}
-      80%{transform:rotate(-2deg) translateX(-4px)}100%{transform:rotate(0) translateX(0)}}
-  </style>
-</head>
-<body>
-  <section class="hero" aria-label="AIght Ball">
-    <img src="Images/Logo.jpg" alt="AIght Ball logo"/>
-  </section>
-
-  <section id="demo" class="demo" role="region" aria-label="AIght Ball demo">
-    <div class="oracle-wrap">
-      <div class="eightball" id="orb"><div class="window"><div class="triangle"><div class="msg" id="orb-msg">ASK A QUESTION</div></div></div></div>
-    </div>
-
-    <form id="question-form" class="qa" autocomplete="off">
-      <label class="sr-only" for="user-question">Ask a question</label>
-      <input id="user-question" type="text" name="question" placeholder="Ask anything—decisions, dilemmas, ideas…" maxlength="200"/>
-      <button type="submit" aria-label="Ask AIght Ball">Ask</button>
-      <button type="button" id="shake-btn" aria-label="Shake the ball">Shake It</button>
-    </form>
-    <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
-
-    <!-- mode toggle -->
-    <div class="mode-toggle" role="tablist" aria-label="Output mode">
-      <button class="seg" data-mode="story"  role="tab" aria-selected="true"  aria-pressed="true">Story</button>
-      <button class="seg" data-mode="cards"  role="tab" aria-selected="false" aria-pressed="false">Cards</button>
-    </div>
-
-    <div class="responses-wrap" aria-live="polite">
-      <div id="responses" class="responses-grid"></div>
-    </div>
-  </section>
-
-  <footer>
-    © 2025 AIght Ball · Follow us on
-    <a href="https://instagram.com/aightball.io" target="_blank" rel="noopener">Instagram</a> &
-    <a href="https://youtube.com/@aightballio" target="_blank" rel="noopener">YouTube</a>
-  </footer>
-
-<script>
-/* ================== DOM ================== */
-const orb = document.getElementById('orb');
-const orbMsg = document.getElementById('orb-msg');
-const inputEl = document.getElementById('user-question');
-const askBtn = document.querySelector('#question-form button[type="submit"]');
+    /* keep existing border color hooks */
+    .card--driver{ border-color:rgba(45,212,191,.35); }
+    .card--planner{ border-color:rgba(242,201,76,.35); }
+    .card--probe{ border-color:rgba(122,160,180,.35); }
+@@ -125,12 +127,13 @@
 const shakeBtn = document.getElementById('shake-btn');
 const responsesEl = document.getElementById('responses');
-const modeBtns = document.querySelectorAll('.seg[data-mode]');
-let MODE = 'story'; // default
 
-modeBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    MODE = btn.dataset.mode;
-    modeBtns.forEach(b=>{
-      const active = b.dataset.mode===MODE;
-      b.setAttribute('aria-selected', active);
-      b.setAttribute('aria-pressed', active);
-    });
-    if (responsesEl.innerHTML.trim()) askOrShake();
-  });
-});
+/* ================== VOICES ================== */
+const VOICES = [
+  { id:'driver', label:'Driver', badge:'Direct', color:'var(--driver)' },
+  { id:'planner', label:'Planner', badge:'Plan', color:'var(--planner)' },
+  { id:'probe', label:'Inquisitive', badge:'Probe', color:'var(--probe)' },
+  { id:'sage', label:'Sage', badge:'Muse', color:'var(--sage)' },
+/* ================== OUTCOME TIERS (Unified Voice) ================== */
+// We keep four cards for layout parity, but they're narrative outcome tiers, not personas.
+const TIERS = [
+  { id:'common',   label:'Likely',     badge:'Main Path',   color:'var(--driver)',   cardClass:'card--driver'   },
+  { id:'uncommon', label:'Alternate',  badge:'Second Path', color:'var(--planner)',  cardClass:'card--planner'  },
+  { id:'rare',     label:'Long Shot',  badge:'Third Path',  color:'var(--probe)',    cardClass:'card--probe'    },
+  { id:'xfactor',  label:'Wildcard',   badge:'X-Factor',    color:'var(--sage)',     cardClass:'card--sage'     },
+];
 
-/* ================== UI helpers ================== */
-function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
-function setLoading(on){
-  askBtn.disabled = on; shakeBtn.disabled = on;
-  orbMsg.textContent = on ? "…" : "ASK A QUESTION";
-  responsesEl.className = 'responses-grid ' + (MODE==='cards' ? 'cards' : '');
-  if(on){
-    responsesEl.innerHTML = '';
-    const skeleton = (cls,label)=>`
-      <div class="persona-card skeleton ${cls}">
-        <div class="head"><span class="pill role">${label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
-        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
-      </div>`;
-    responsesEl.innerHTML = MODE==='story'
-      ? skeleton('card--driver','Story')
-      : [skeleton('card--driver','Likely'),skeleton('card--planner','Alternate'),skeleton('card--probe','Long Shot'),skeleton('card--sage','Wildcard')].join('');
-  }
-}
+/* ================== UTIL ================== */
+@@ -139,24 +142,23 @@
+function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
+function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
+function cardClass(id){ return id==='driver'?'card--driver':id==='planner'?'card--planner':id==='probe'?'card--probe':'card--sage'; }
 
-/* ================== RENDERERS ================== */
-function renderStory(data){
-  const card = document.createElement('div');
-  card.className = 'persona-card card--driver';
-  const total = (data.outcomes||[]).reduce((s,o)=>s+(o.percent||0),0);
-  card.innerHTML = `
-    <div class="head">
-      <span class="pill role">Story</span>
-      <span class="pill">Unified</span>
-      <span class="odds">${total}%</span>
-    </div>
-    <p class="body">${(data.story||'').trim()}</p>
-    <div class="helper" style="margin-top:.4rem">Tap to regenerate this story</div>
-  `;
-  // simple re-render on click (re-ask)
-  card.addEventListener('click', askOrShake);
+function renderSkeletons(){
   responsesEl.innerHTML = '';
-  responsesEl.appendChild(card);
-  // Optional: append deciders as a small list
-  if (Array.isArray(data.deciders) && data.deciders.length){
-    const meta = document.createElement('div');
-    meta.className = 'persona-card';
-    meta.style.borderColor = 'rgba(255,255,255,.08)';
-    meta.innerHTML = `
-      <div class="head"><span class="pill role">What tips the odds</span></div>
-      <p class="body">• ${data.deciders.join('<br>• ')}</p>`;
-    responsesEl.appendChild(meta);
-  }
-}
-
-function renderCards(data){
-  responsesEl.innerHTML = '';
-  const map = {
-    'likely':'card--driver', 'most likely':'card--driver',
-    'alternate':'card--planner',
-    'long shot':'card--probe',
-    'wildcard':'card--sage'
-  };
-  (data.outcomes||[]).forEach(o=>{
+  VOICES.forEach(v=>{
+  TIERS.forEach(t=>{
     const div = document.createElement('div');
-    const cls = map[(o.label||'').toLowerCase()] || 'card--driver';
-    div.className = `persona-card ${cls}`;
+    div.className = `persona-card skeleton ${cardClass(v.id)}`;
+    div.className = `persona-card skeleton ${t.cardClass}`;
     div.innerHTML = `
-      <div class="head">
-        <span class="pill role">${o.label || 'Outcome'}</span>
-        <span class="pill">${(o.percent ?? '—')}%</span>
-        <span class="odds"></span>
-      </div>
-      <p class="body">${Array.isArray(o.beats)? '• ' + o.beats.join('<br>• ') : ''}</p>
-      <div class="helper" style="margin-top:.4rem">Tap to regenerate this card</div>
+      <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+      <div class="head"><span class="pill role">${t.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+      <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
     `;
-    div.addEventListener('click', askOrShake);
     responsesEl.appendChild(div);
   });
 }
 
-/* ================== DATA FETCH ================== */
-// Replace '/api/forecast' with your actual endpoint.
-async function getForecast(question){
-  const res = await fetch('/api/forecast', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ question, style:'narrative', return_schema:'json_v1' })
-  });
-  if(!res.ok) throw new Error('API error');
-  return await res.json();
+function createCard({voice, label, badge, pct, text, onClick}){
+function createCard({tier, label, badge, pct, text, onClick}){
+  const div = document.createElement('div');
+  div.className = `persona-card ${cardClass(voice)}`;
+  div.className = `persona-card ${tier.cardClass}`;
+  const pctStr = (typeof pct === 'number') ? `${pct}%` : '—';
+  div.innerHTML = `
+    <div class="head">
+@@ -207,12 +209,14 @@
+  const art = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
+  return {
+    artifact: art[seed % art.length],
+    window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ]
+    window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ],
+    tempo: ['steady cadence','short sprints','slow build','weekend push','late-night focus'][ (seed>>>6)%5 ]
+  };
+}
+
+/* ================== PROBABILITY MODEL (voice-specific) ================== */
+function baseYes(q, topic){
+/* ================== PROBABILITY MODEL (Unified) ================== */
+function baseTilt(q, topic){
+  // Similar to prior baseYes, but used as a directional prior for the main path.
+  let b=50, s=q.toLowerCase();
+  if (s.includes('should i')) b+=4;
+  if (s.includes('now')||s.includes('today')) b+=2;
+@@ -224,75 +228,66 @@
+  const jitter = ((seededHash(q+topic) % 11) - 5);
+  return Math.max(5, Math.min(95, b+jitter));
+}
+function voicePct(voice, base){
+  // independent tilts per voice
+  if (voice==='driver'){
+    let p = base + (base>=55? +8 : base<=45? -8 : 0);
+    return Math.round(clamp(p/100, .3, .9)*100);
+  }
+  if (voice==='planner'){
+    let p = base + (base>=60? +4 : base<=55? -6 : 0);
+    // center to 35–65
+    p = Math.max(35, Math.min(65, p));
+    return Math.round(p);
+  }
+  if (voice==='probe'){
+    // sometimes omit % entirely; return null 40% of time
+    if ((seededHash(String(base)) % 10) < 4) return null;
+    let p = base + ((seededHash('p'+base)%21)-10); // ±10 wobble
+    return Math.max(20, Math.min(80, Math.round(p)));
+  }
+  // sage
+  {
+    let p = base;
+    if (base>=70) p+=6; else if (base>=40 && base<=60) p-=5; // leans wait in ambiguity
+    return Math.max(40, Math.min(70, Math.round(p)));
+  }
+
+function allocateProbabilities(q, topic){
+  const base = baseTilt(q, topic); // 0-100
+  const seed = seededHash(q);
+  // Primary between 55–75 if base>50, else 45–60; keep realistic spread
+  const main = base>=50
+    ? Math.min(80, Math.max(55, base + ((seed%13)-6)))
+    : Math.max(40, Math.min(60, base + ((seed%9)-4)));
+
+  // Secondary 20–35, influenced inversely by main
+  const alt = Math.max(15, Math.min(35, 100 - main - (seed%15)));
+
+  // Rare gets 5–15, remainder goes to xfactor
+  let rare = Math.max(5, Math.min(15, (seed%11)+5));
+  let x = Math.max(0, 100 - Math.round(main) - Math.round(alt) - Math.round(rare));
+
+  // Occasionally suppress X-factor to 0 for cleaner 3-path read
+  if ((seed%7)===0){ x = 0; rare += Math.min(5, 100 - (Math.round(main)+Math.round(alt)+Math.round(rare))); }
+
+  return {
+    common:   Math.round(main),
+    uncommon: Math.round(alt),
+    rare:     Math.round(rare),
+    xfactor:  Math.round(x)
+  };
+}
+function leanFromPct(voice, pct, base){
+  if (voice==='probe' && pct==null) return 'mixed';
+  const p = pct;
+  if (p>=65) return 'yes';
+  if (p<=40) return 'no';
+  if (p>40 && p<55) return 'wait';
+  return 'mixed';
+
+/* ================== NARRATIVE COPY (Unified Voice) ================== */
+function sceneBits(topic){
+  const places = {
+    work:['inbox ping','desk lamp','whiteboard edge','calendar chime','Slack sidebar'],
+    relationship:['doorway pause','hands warming a mug','sidewalk corner','open tab left unsent','quiet room'],
+    food:['warm pan','grocery aisle','steam from a bowl','recipe margin','timer beep'],
+    health:['shoelace knot','cold water glass','stretch in the doorway','sunlight on the floor','heartbeat settling'],
+    money:['budget cell turning green','order summary','checkout button hover','account alert','transfer note'],
+    creative:['cursor blink','scrap of melody','thumbnail draft','scene card','margin doodle'],
+    travel:['open booking tab','packed duffel','printed route','gate display','weather check'],
+    tech:['toggle in settings','progress bar','backup prompt','commit message','patch notes'],
+    philosophy:['journal margin','breath count','window reflection','page fold','late-night hush'],
+    general:['open tab','sticky note','quiet hallway','phone buzz','evening light']
+  };
+  return places[topic]||places.general;
+}
+
+/* ================== COPY RULES ================== */
+function driverText(pct, topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const softened = pct<60;
+  if (softened){
+    return `Move if it still feels right. Use the ${A} to start one obvious slice for ${tb}. Stop on a clean save and reassess ${W}.`;
+  }
+  return `Act now. Open the ${A}, push the main slice for ${tb}, and cut extras. Save on progress, quit, and pick up ${W}.`;
+function commonText(pct, topic, seed, q){
+  const tb = timebox(topic), A=seed.artifact, bits = sceneBits(topic);
+  return `Most paths lead here (${pct}%). You open the ${A}, set a ${tb} window, and the first win arrives sooner than your doubt expects — a ${randFrom(bits, seededHash(q))} that signals you’re on the right thread. Keep the tempo ${seed.tempo}; end one step early so tomorrow has a runway.`;
+}
+function plannerText(pct, topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const conditionalStart = (seededHash(q) % 2)===0;
+  const open = conditionalStart ? `If you move forward, map first.` : `Map before moving.`;
+  const constraint = `Cap the effort at ${tb} with one checkpoint at halfway.`;
+  const finish = `Log a line in the ${A} and review ${W}.`;
+  return `${open} Break it into a single step, ${constraint} ${finish}`;
+function uncommonText(pct, topic, seed, q){
+  const A=seed.artifact, bits = sceneBits(topic);
+  return `The alternate arc (${pct}%) starts with friction. A detail doesn’t click — a ${randFrom(bits, seededHash('u'+q))} you can’t ignore. You pivot once, trim scope in the ${A}, and the story slows without stalling. It still lands, just later than you planned.`;
+}
+function probeText(topic, seed, q){
+  const tb = timebox(topic), A = seed.artifact, W = seed.window;
+  const q1 = `What exactly are you hoping will change if you do this?`;
+  const q2 = `What would staying put teach you that moving wouldn’t?`;
+  const step = `Try one tiny experiment for ${tb} and write one line in the ${A}; if it warms, schedule time ${W}.`;
+  return `${q1} ${q2} ${step}`;
+function rareText(pct, topic, seed, q){
+  const bits = sceneBits(topic);
+  return `The long shot (${pct}%) snaps into place when chance intervenes — a stranger’s note, a lucky timing window, or a ${randFrom(bits, seededHash('r'+q))} that becomes the hinge. If it appears, drop what can wait and ride the break.`;
+}
+function sageText(pct, topic, seed, q){
+  const W = seed.window;
+  // single image budget
+  const image = randFrom(['tide','glimmer','quiet door','low hum','soft light'], seededHash(q));
+  if (pct>=65){
+    return `If the ${image} is steady, begin—and end a step early. Let attention stay soft, not forced. Return ${W} with the echo still warm.`;
+  }
+  if (pct<=45){
+    return `If the ${image} dims when you think of it, pause. Let the night be still; timing gathers when you stop tugging. Look again ${W}.`;
+  }
+  return `Stand at ease and listen. If the ${image} returns twice, that’s your signal; if it scatters, wait. Either way, notice the timing ${W}.`;
+function xfactorText(pct, topic, seed, q){
+  if (!pct || pct<=0) return `Dormant in this reading — no meaningful wildcards detected. If one arrives, it’ll announce itself loudly.`;
+  const bits = sceneBits(topic);
+  return `The wildcard (${pct}%) isn’t predictable, but it is usable. Expect an external jolt — a policy shift, an unexpected ally, or a ${randFrom(bits, seededHash('x'+q))}. Treat it as acceleration, not a new destination.`;
+}
+
+/* ============ DIVERSITY GUARD ============ */
+@@ -306,7 +301,7 @@
+  for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
+  return true;
+}
+function trimByLen(txt, min=60, max=260){
+function trimByLen(txt, min=60, max=360){
+  if (txt.length<=max) return txt;
+  const cut = txt.lastIndexOf('.', max);
+  return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
+@@ -319,65 +314,60 @@
+  if(on) renderSkeletons();
+}
+
+async function renderVoices(question){
+async function renderForecast(question){
+  setLoading(true);
+  try{
+    const topic = detectTopic(question);
+    const seed = extractSeed(question, topic);
+    const base = baseYes(question, topic);
+    const pct = allocateProbabilities(question, topic);
+    const used = [];
+    responsesEl.innerHTML = '';
+
+    // deterministic artifact cycling for regen variety
+    const artPool = [...(ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general)];
+    const artAt = (i)=> artPool[i % artPool.length];
+    const tiersInOrder = ['common','uncommon','rare','xfactor'];
+
+    VOICES.forEach((v, idx)=>{
+    tiersInOrder.forEach((key, idx)=>{
+      const t = TIERS.find(x=>x.id===key);
+      const placeholder = document.createElement('div');
+      placeholder.className = `persona-card skeleton ${cardClass(v.id)}`;
+      placeholder.className = `persona-card skeleton ${t.cardClass}`;
+      placeholder.innerHTML = `
+        <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+        <div class="head"><span class="pill role">${t.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+      `;
+      responsesEl.appendChild(placeholder);
+
+      (async()=>{
+        // local synth (you can swap to backend by posting {voice, controls} here)
+        const pct = voicePct(v.id, base);
+        const localSeed = { artifact: artAt(idx), window: seed.window };
+
+        let text =
+          v.id==='driver' ? driverText(pct??base, topic, localSeed, question) :
+          v.id==='planner' ? plannerText(pct??base, topic, localSeed, question) :
+          v.id==='probe'   ? probeText(topic, localSeed, question) :
+                             sageText(pct??base, topic, localSeed, question);
+
+        // diversity guard
+        const makeText = (tierKey)=>{
+          const p = pct[tierKey];
+          if (tierKey==='common')   return commonText(p, topic, seed, question);
+          if (tierKey==='uncommon') return uncommonText(p, topic, seed, question);
+          if (tierKey==='rare')     return rareText(p, topic, seed, question);
+          return xfactorText(p, topic, seed, question);
+        };
+
+        let text = makeText(key);
+        let tries=0;
+        while(!distanceOk(text, used) && tries<2){
+          text = text.replace(/\.$/,'') + (v.id==='probe' ? ' Note what surprised you.' : ' Make it one step smaller.');
+          text = text.replace(/\.$/,'') + ' — tighten one more notch.';
+          text = trimByLen(text);
+          tries++;
+        }
+        used.push(ngrams(text,4));
+
+        const card = createCard({
+          voice: v.id,
+          label: v.label,
+          badge: v.badge,
+          pct: (v.id==='probe'? null : pct),
+          tier: t,
+          label: t.label,
+          badge: t.badge,
+          pct: pct[key]>0? pct[key] : null,
+          text,
+          onClick: async ()=>{
+            // regenerate this voice with rotated artifact
+            const again = { artifact: artAt(idx+1), window: seed.window };
+            const p2 = voicePct(v.id, base);
+            let t2 =
+              v.id==='driver' ? driverText(p2??base, topic, again, question) :
+              v.id==='planner' ? plannerText(p2??base, topic, again, question) :
+              v.id==='probe'   ? probeText(topic, again, question) :
+                                 sageText(p2??base, topic, again, question);
+            // regenerate with slight time/window remix for variety
+            const remix = { ...seed, window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ ((seededHash(key+Date.now())>>>3)%6) ] };
+            let t2;
+            if (key==='common')   t2 = commonText(pct[key], topic, remix, question);
+            else if (key==='uncommon') t2 = uncommonText(pct[key], topic, remix, question);
+            else if (key==='rare')     t2 = rareText(pct[key], topic, remix, question);
+            else                        t2 = xfactorText(pct[key], topic, remix, question);
+            card.querySelector('.body').textContent = t2;
+            if (v.id!=='probe') card.querySelector('.odds').textContent = `${p2}%`;
+          }
+        });
+        placeholder.replaceWith(card);
+@@ -391,14 +381,16 @@
 }
 
 /* ================== EVENTS ================== */
-async function askOrShake(){
+document.getElementById('shake-btn').addEventListener('click', ()=>{
+function askOrShake(){
   const q = inputEl.value.trim() || "Surprise me";
-  setLoading(true);
-  try{
-    const data = await getForecast(q);
-    if (MODE==='story') renderStory(data); else renderCards(data);
-    shakeOrb();
-  } catch (e){
-    responsesEl.innerHTML = `
-      <div class="persona-card" style="border-color:#703;">
-        <div class="head"><span class="pill role">Error</span></div>
-        <p class="body">Couldn’t reach the AI service. ${e?.message || ''}</p>
-      </div>`;
-  } finally {
-    setLoading(false);
-  }
+  renderVoices(q);
+});
+  renderForecast(q);
 }
 
 document.getElementById('shake-btn').addEventListener('click', askOrShake);
-document.getElementById('question-form').addEventListener('submit', (e)=>{ e.preventDefault(); askOrShake(); });
+
+document.getElementById('question-form').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const q = inputEl.value.trim() || "Surprise me";
+  renderVoices(q);
+  askOrShake();
+});
 </script>
 </body>
-</html>
+
 
 
 

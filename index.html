@@ -191,7 +191,90 @@ function createFieldCard(def, value){
   return div;
 }
 
-/* ================== TOPIC & LOCAL SYNTH (fallback only) ================== */
+/* ============== CONTEXT-FIRST PROMPT COMPOSER ============== */
+/* We keep your API, but nudge output into: natural paragraph + CHIPS line. */
+function composePrompt(userQuestion){
+  return `
+You are AIght Ball: give a short, empathetic, *context-first* narrative that directly addresses the user's wording (not forced yes/no).
+
+Write ONE compact paragraph (<= 110 words) that:
+- mirrors the question's intent,
+- gives orientation (move / wait / explore / reflect),
+- includes one concrete next step and one caveat,
+- feels specific to the question (echo key terms once).
+
+After the paragraph, add a single metadata line starting with "CHIPS:" in this exact key/value format:
+CHIPS: prob=0-100; conf=High|Medium|Low; move="one-sentence next step"; watch="one-sentence caveat"
+
+Question: ${userQuestion}
+`;
+}
+
+/* ================== PARSERS (non-intrusive) ================== */
+/* 1) CHIPS parser (preferred) */
+function parseChipsBlock(text){
+  // Find CHIPS line anywhere near the end
+  const chipsMatch = text.match(/CHIPS:\s*([^]+)$/i);
+  if(!chipsMatch) return null;
+
+  const before = text.slice(0, chipsMatch.index).trim();
+  const chips = chipsMatch[1].trim();
+
+  // key=value; pairs, values may be quoted
+  const obj = {};
+  chips.split(/;\s*/).forEach(pair=>{
+    const m = pair.match(/(\w+)\s*=\s*("(?:[^"]+)"|[^;]+)/);
+    if(m){
+      const k = m[1].toLowerCase();
+      let v = m[2]?.trim() ?? '';
+      if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1,-1);
+      obj[k] = v;
+    }
+  });
+
+  const probability = obj.prob ? Number(obj.prob) : (obj.probability ? Number(obj.probability) : null);
+  const confidence = obj.conf || obj.confidence || null;
+  const advice = obj.move || '';
+  const caveats = obj.watch || obj.caveats || '';
+
+  return {
+    narrative: before,
+    probability: Number.isFinite(probability) ? Math.max(0, Math.min(100, Math.round(probability))) : null,
+    confidence: confidence || null,
+    advice,
+    caveats
+  };
+}
+
+/* 2) Labeled fallback ("Verdict/Why/Move/Watch/PROB/CONF") */
+function parseLabeled(text){
+  const grab = (label)=> {
+    const r = new RegExp(`^\\s*${label}\\s*:\\s*([^]+?)(?:\\n\\s*[A-Z]{2,}|$)`, 'im');
+    const m = text.match(r);
+    return m ? m[1].trim() : '';
+  };
+  const narrative = text.replace(/^(\s*(Verdict|Why|Move|Watch|PROB|CONF)\s*:.*)+/gim,'').trim() || text.trim();
+  const probRaw = grab('PROB').replace('%','').trim();
+  const conf = grab('CONF') || null;
+  const advice = grab('Move');
+  const caveats = grab('Watch') || grab('Caveats');
+  const probability = probRaw ? Math.max(0, Math.min(100, Math.round(Number(probRaw)))) : null;
+
+  return { narrative, probability, confidence: conf || null, advice, caveats };
+}
+
+/* Heuristic: if we have structured chips, use them; otherwise return null. */
+function tryExtractFromText(text){
+  const chips = parseChipsBlock(text);
+  if (chips) return chips;
+  // check for labels quickly
+  if (/(^|\n)\s*(Verdict|Why|Move|Watch|PROB|CONF)\s*:/i.test(text)) {
+    return parseLabeled(text);
+  }
+  return null;
+}
+
+/* ================== TOPIC & LOCAL SYNTH (unchanged fallback) ================== */
 const ARTIFACT_POOLS = {
   work:['Slack DM','email draft','ticket','calendar block','deck slide'],
   relationship:['text message','voice note','coffee invite','note'],
@@ -251,16 +334,17 @@ function localSynthesis(question){
   return { narrative, probability, confidence, advice, caveats };
 }
 
-/* ================== API WRAPPER (PRESERVES YOUR FETCH) ================== */
+/* =============== API WRAPPER (PRESERVES YOUR FETCH) =============== */
 /*
   If you already expose one of these functions on window, we’ll use it:
     - window.fetchAightBallDecision(prompt)
     - window.aightApiFetch(prompt)
     - window.callDecisionAPI(prompt)
-  Expected return shape (we normalize below):
-    { narrative, probability, confidence, advice, caveats }
+  We pass a composed prompt to encourage the context-first narrative.
 */
-async function fetchDecision(prompt){
+async function fetchDecision(userPrompt){
+  const composed = composePrompt(userPrompt);
+
   const cand = [
     window.fetchAightBallDecision,
     window.aightApiFetch,
@@ -268,34 +352,64 @@ async function fetchDecision(prompt){
   ].find(fn => typeof fn === 'function');
 
   if (cand){
-    const raw = await cand(prompt);
-    return normalizeResult(raw, prompt);
+    const raw = await cand(composed);
+    return normalizeResult(raw, userPrompt);
   }
   // Fallback to local synth
-  return localSynthesis(prompt);
+  return localSynthesis(userPrompt);
 }
 
-function normalizeResult(raw, prompt){
-  // Be tolerant to field names from your current API
-  if (!raw || typeof raw !== 'object') return localSynthesis(prompt);
-  const n = raw.narrative || raw.story || raw.summary || '';
-  const prob = raw.probability ?? raw.odds ?? raw.percent ?? null;
-  const conf = raw.confidence ?? raw.certainty ?? null;
-  const advice = raw.advice ?? raw.recommendation ?? raw.action ?? '';
-  const caveats = raw.caveats ?? raw.risks ?? raw.cons ?? raw.notes ?? '';
-  // if API only returns a single text, derive basics:
-  if (!n && typeof raw.text === 'string'){
-    const synth = localSynthesis(prompt);
-    return { ...synth, narrative: raw.text };
+/* Normalize responses without overriding existing good fields.
+   If a long narrative/plain text is returned, try to extract CHIPS/labels. */
+function normalizeResult(raw, userQuestion){
+  // Non-object payload → treat as text
+  if (!raw || (typeof raw !== 'object' && typeof raw !== 'string')){
+    return localSynthesis(userQuestion);
   }
-  // If prob is missing but we have a score, map 0–1 to %
-  const mappedProb = (typeof prob === 'number' && prob <= 1) ? Math.round(prob*100) : (typeof prob === 'number' ? Math.round(prob) : null);
+
+  // If backend returned a plain string
+  if (typeof raw === 'string'){
+    const parsed = tryExtractFromText(raw);
+    return parsed || { ...localSynthesis(userQuestion), narrative: raw.trim() };
+  }
+
+  // Object payload: use provided fields first
+  let n = raw.narrative || raw.story || raw.summary || raw.text || '';
+  let prob = raw.probability ?? raw.odds ?? raw.percent ?? null;
+  let conf = raw.confidence ?? raw.certainty ?? null;
+  let advice = raw.advice ?? raw.recommendation ?? raw.action ?? '';
+  let caveats = raw.caveats ?? raw.risks ?? raw.cons ?? raw.notes ?? '';
+
+  // If narrative contains CHIPS/labels, parse and prefer those
+  const parsed = n ? tryExtractFromText(n) : null;
+  if (parsed){
+    // Prefer explicit backend fields if present; otherwise parsed
+    n = n ? parsed.narrative : parsed.narrative;
+    prob = (prob==null ? parsed.probability : prob);
+    conf = (conf==null ? parsed.confidence : conf);
+    advice = advice || parsed.advice;
+    caveats = caveats || parsed.caveats;
+  }
+
+  // If probability came as 0–1, map to %
+  if (typeof prob === 'number' && prob <= 1) prob = Math.round(prob*100);
+
+  // Final fill using local synth only for empty slots (non-invasive)
+  if (!n || (!advice && !caveats && prob==null && !conf)){
+    const synth = localSynthesis(userQuestion);
+    n ||= synth.narrative;
+    advice ||= synth.advice;
+    caveats ||= synth.caveats;
+    prob = (prob==null ? synth.probability : prob);
+    conf ||= synth.confidence;
+  }
+
   return {
-    narrative: n || localSynthesis(prompt).narrative,
-    probability: mappedProb,
-    confidence: conf,
-    advice: advice || localSynthesis(prompt).advice,
-    caveats: caveats || localSynthesis(prompt).caveats
+    narrative: (n || '').trim(),
+    probability: (typeof prob === 'number' ? Math.max(0, Math.min(100, Math.round(prob))) : null),
+    confidence: conf || null,
+    advice: advice || '',
+    caveats: caveats || ''
   };
 }
 
@@ -360,8 +474,8 @@ document.getElementById('question-form').addEventListener('submit', (e)=>{
   runQuery(q);
 });
 </script>
-</body>
-</html>
+
+
 
 
 

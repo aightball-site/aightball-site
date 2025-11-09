@@ -50,14 +50,14 @@
     button:hover{ background:var(--accent-hover); } button:active{ transform:translateY(1px); }
     .helper{ color:var(--muted); text-align:center; margin:.25rem 0 .75rem; }
 
-    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:440px; overflow:auto; padding:.6rem; }
+    .responses-wrap{ border:1px solid var(--border); border-radius:14px; background:#121212; max-height:540px; overflow:auto; padding:.6rem; }
     .responses-grid{ display:grid; grid-template-columns:1fr; gap:.6rem; }
     @media(min-width:680px){ .responses-grid{ grid-template-columns:1fr 1fr; } }
 
     .persona-card{
       border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .95rem;
       background:linear-gradient(180deg, #141414, #0f0f0f);
-      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease; cursor:pointer;
+      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease;
     }
     .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
     .head{ display:flex; align-items:center; gap:.5rem; margin:0 0 .35rem; }
@@ -70,6 +70,12 @@
     .card--planner{ border-color:rgba(242,201,76,.35); }
     .card--probe{ border-color:rgba(122,160,180,.35); }
     .card--sage{ border-color:rgba(167,139,250,.35); }
+
+    .narrative{
+      border:1px solid var(--border); border-radius:12px; padding:1rem;
+      background:linear-gradient(180deg, #171717, #121212); color:#eaeaea; line-height:1.6;
+    }
+    .narrative h3{ margin:.2rem 0 .4rem; font-size:1.05rem; color:#d6d6d6; }
 
     .skeleton{ position:relative; overflow:hidden; }
     .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
@@ -106,6 +112,11 @@
     <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
 
     <div class="responses-wrap" aria-live="polite">
+      <div id="narrative" class="narrative" hidden>
+        <h3>Story</h3>
+        <div id="narrative-text"></div>
+      </div>
+
       <div id="responses" class="responses-grid"></div>
     </div>
   </section>
@@ -124,54 +135,63 @@ const inputEl = document.getElementById('user-question');
 const askBtn = document.querySelector('#question-form button[type="submit"]');
 const shakeBtn = document.getElementById('shake-btn');
 const responsesEl = document.getElementById('responses');
+const narrativeBox = document.getElementById('narrative');
+const narrativeText = document.getElementById('narrative-text');
 
-/* ================== VOICES ================== */
-const VOICES = [
-  { id:'driver', label:'Driver', badge:'Direct', color:'var(--driver)' },
-  { id:'planner', label:'Planner', badge:'Plan', color:'var(--planner)' },
-  { id:'probe', label:'Inquisitive', badge:'Probe', color:'var(--probe)' },
-  { id:'sage', label:'Sage', badge:'Muse', color:'var(--sage)' },
+/* ================== SINGLE SOURCE OF TRUTH ================== */
+const state = {
+  loading: false,
+  question: "",
+  narrative: "",
+  fields: { probability:null, confidence:null, advice:"", caveats:"" }
+};
+
+/* ================== FIELD DEFINITIONS ================== */
+const FIELDS = [
+  { key:'probability', label:'Probability', badge:'Odds', card:'card--driver', fmt:v => (v==null? '—' : `${Math.round(v)}%`) },
+  { key:'confidence',  label:'Confidence',  badge:'Certainty', card:'card--planner', fmt:v => (v==null? '—' : (typeof v==='number'? `${Math.round(v)}%` : String(v))) },
+  { key:'advice',      label:'Advice',      badge:'Move', card:'card--probe', fmt:v => String(v||'') },
+  { key:'caveats',     label:'Caveats',     badge:'Watch', card:'card--sage', fmt:v => String(v||'') },
 ];
 
 /* ================== UTIL ================== */
 function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
-function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
 function seededHash(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
 function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
-function cardClass(id){ return id==='driver'?'card--driver':id==='planner'?'card--planner':id==='probe'?'card--probe':'card--sage'; }
 
 function renderSkeletons(){
+  narrativeBox.hidden = false;
+  narrativeText.innerHTML = `<div class="skeleton">
+    <div class="line wide"></div><div class="line wide"></div><div class="line med"></div>
+  </div>`;
   responsesEl.innerHTML = '';
-  VOICES.forEach(v=>{
+  FIELDS.forEach(f=>{
     const div = document.createElement('div');
-    div.className = `persona-card skeleton ${cardClass(v.id)}`;
+    div.className = `persona-card skeleton ${f.card}`;
     div.innerHTML = `
-      <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
+      <div class="head"><span class="pill role">${f.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
       <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
     `;
     responsesEl.appendChild(div);
   });
 }
 
-function createCard({voice, label, badge, pct, text, onClick}){
+function createFieldCard(def, value){
   const div = document.createElement('div');
-  div.className = `persona-card ${cardClass(voice)}`;
-  const pctStr = (typeof pct === 'number') ? `${pct}%` : '—';
+  div.className = `persona-card ${def.card}`;
+  const headerRight = (def.key==='probability' || def.key==='confidence') ? `<span class="odds">${def.fmt(value)}</span>` : '';
   div.innerHTML = `
     <div class="head">
-      <span class="pill role">${label}</span>
-      <span class="pill">${badge}</span>
-      <span class="odds">${pctStr}</span>
+      <span class="pill role">${def.label}</span>
+      <span class="pill">${def.badge}</span>
+      ${headerRight}
     </div>
-    <p class="body">${text}</p>
-    <div class="helper" style="margin-top:.4rem">Tap to regenerate this card</div>
+    <p class="body">${(def.key==='advice' || def.key==='caveats') ? def.fmt(value) : ''}</p>
   `;
-  div.addEventListener('click', onClick);
   return div;
 }
 
-/* ================== TOPIC + CONTEXT ================== */
+/* ================== TOPIC & LOCAL SYNTH (fallback only) ================== */
 const ARTIFACT_POOLS = {
   work:['Slack DM','email draft','ticket','calendar block','deck slide'],
   relationship:['text message','voice note','coffee invite','note'],
@@ -184,7 +204,6 @@ const ARTIFACT_POOLS = {
   philosophy:['journal line','sticky note','breath count'],
   general:['note','list','tab','timer']
 };
-
 function detectTopic(q){
   const s=q.toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
   if (has('boss','promotion','raise','job','coworker','department','sabbatical','work','school','degree','career')) return 'work';
@@ -202,207 +221,149 @@ function timebox(topic){
   return ({work:'25 minutes', food:'40 minutes', relationship:'15 minutes', health:'20 minutes', money:'10 minutes',
     creative:'30 minutes', travel:'20 minutes', tech:'15 minutes', philosophy:'10 minutes', general:'20 minutes'})[topic]||'20 minutes';
 }
-function extractSeed(question, topic){
-  const seed = seededHash(question+nowBucket());
-  const art = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
+function localSynthesis(question){
+  const topic = detectTopic(question);
+  const seed = seededHash(question);
+  const artPool = ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general;
+  const artifact = artPool[seed % artPool.length];
+  const window = ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ];
+  // base prob
+  let base=50, s=question.toLowerCase();
+  if (s.includes('should i')) base+=4;
+  if (s.includes('now')||s.includes('today')) base+=2;
+  if (/(quit|end|sell|delete|cut out)/.test(s)) base-=6;
+  if (/(start|try|begin|learn)/.test(s)) base+=6;
+  if (/(wait|later|too soon)/.test(s)) base-=4;
+  const topicBias = {work:0, money:-2, relationship:-2, health:3, food:2, travel:1, creative:4, tech:0, philosophy:0, general:0}[topic]||0;
+  base += topicBias + (((seed % 11) - 5));
+  base = Math.max(5, Math.min(95, base));
+  // narrative + fields
+  const tb = timebox(topic);
+  const narrative = `Here's how this lands: make one concrete move, not the whole thing. Open the ${artifact}, push a single slice for ${tb}, and stop on a clean save. Look again ${window}.`;
+  const probability = Math.round(clamp(base/100,.1,.95)*100);
+  const confidence = (probability>=70? 'High' : probability>=50? 'Medium' : 'Low');
+  const advice = (probability>=65)
+    ? `Act now. Keep it scoped to ${tb}. Cut extras; log one line in the ${artifact}.`
+    : (probability<=40)
+      ? `Hold. Sleep on it. If it still pulls ${window}, reassess with a smaller slice.`
+      : `Try a reversible micro-step for ${tb}. Decide after you review ${window}.`;
+  const caveats = `If money, safety, or relationships are at risk, add a second opinion before committing.`;
+  return { narrative, probability, confidence, advice, caveats };
+}
+
+/* ================== API WRAPPER (PRESERVES YOUR FETCH) ================== */
+/*
+  If you already expose one of these functions on window, we’ll use it:
+    - window.fetchAightBallDecision(prompt)
+    - window.aightApiFetch(prompt)
+    - window.callDecisionAPI(prompt)
+  Expected return shape (we normalize below):
+    { narrative, probability, confidence, advice, caveats }
+*/
+async function fetchDecision(prompt){
+  const cand = [
+    window.fetchAightBallDecision,
+    window.aightApiFetch,
+    window.callDecisionAPI
+  ].find(fn => typeof fn === 'function');
+
+  if (cand){
+    const raw = await cand(prompt);
+    return normalizeResult(raw, prompt);
+  }
+  // Fallback to local synth
+  return localSynthesis(prompt);
+}
+
+function normalizeResult(raw, prompt){
+  // Be tolerant to field names from your current API
+  if (!raw || typeof raw !== 'object') return localSynthesis(prompt);
+  const n = raw.narrative || raw.story || raw.summary || '';
+  const prob = raw.probability ?? raw.odds ?? raw.percent ?? null;
+  const conf = raw.confidence ?? raw.certainty ?? null;
+  const advice = raw.advice ?? raw.recommendation ?? raw.action ?? '';
+  const caveats = raw.caveats ?? raw.risks ?? raw.cons ?? raw.notes ?? '';
+  // if API only returns a single text, derive basics:
+  if (!n && typeof raw.text === 'string'){
+    const synth = localSynthesis(prompt);
+    return { ...synth, narrative: raw.text };
+  }
+  // If prob is missing but we have a score, map 0–1 to %
+  const mappedProb = (typeof prob === 'number' && prob <= 1) ? Math.round(prob*100) : (typeof prob === 'number' ? Math.round(prob) : null);
   return {
-    artifact: art[seed % art.length],
-    window: ['tonight','tomorrow','this weekend','next week','by lunch','by Monday'][ (seed>>>3)%6 ]
+    narrative: n || localSynthesis(prompt).narrative,
+    probability: mappedProb,
+    confidence: conf,
+    advice: advice || localSynthesis(prompt).advice,
+    caveats: caveats || localSynthesis(prompt).caveats
   };
 }
 
-/* ================== PROBABILITY MODEL (voice-specific) ================== */
-function baseYes(q, topic){
-  let b=50, s=q.toLowerCase();
-  if (s.includes('should i')) b+=4;
-  if (s.includes('now')||s.includes('today')) b+=2;
-  if (/(quit|end|sell|delete|cut out)/.test(s)) b-=6;
-  if (/(start|try|begin|learn)/.test(s)) b+=6;
-  if (/(wait|later|too soon)/.test(s)) b-=4;
-  const topicBias = {work:0, money:-2, relationship:-2, health:3, food:2, travel:1, creative:4, tech:0, philosophy:0, general:0}[topic]||0;
-  b+=topicBias;
-  const jitter = ((seededHash(q+topic) % 11) - 5);
-  return Math.max(5, Math.min(95, b+jitter));
-}
-function voicePct(voice, base){
-  // independent tilts per voice
-  if (voice==='driver'){
-    let p = base + (base>=55? +8 : base<=45? -8 : 0);
-    return Math.round(clamp(p/100, .3, .9)*100);
-  }
-  if (voice==='planner'){
-    let p = base + (base>=60? +4 : base<=55? -6 : 0);
-    // center to 35–65
-    p = Math.max(35, Math.min(65, p));
-    return Math.round(p);
-  }
-  if (voice==='probe'){
-    // sometimes omit % entirely; return null 40% of time
-    if ((seededHash(String(base)) % 10) < 4) return null;
-    let p = base + ((seededHash('p'+base)%21)-10); // ±10 wobble
-    return Math.max(20, Math.min(80, Math.round(p)));
-  }
-  // sage
-  {
-    let p = base;
-    if (base>=70) p+=6; else if (base>=40 && base<=60) p-=5; // leans wait in ambiguity
-    return Math.max(40, Math.min(70, Math.round(p)));
-  }
-}
-function leanFromPct(voice, pct, base){
-  if (voice==='probe' && pct==null) return 'mixed';
-  const p = pct;
-  if (p>=65) return 'yes';
-  if (p<=40) return 'no';
-  if (p>40 && p<55) return 'wait';
-  return 'mixed';
-}
-
-/* ================== COPY RULES ================== */
-function driverText(pct, topic, seed, q){
-  const tb = timebox(topic), A = seed.artifact, W = seed.window;
-  const softened = pct<60;
-  if (softened){
-    return `Move if it still feels right. Use the ${A} to start one obvious slice for ${tb}. Stop on a clean save and reassess ${W}.`;
-  }
-  return `Act now. Open the ${A}, push the main slice for ${tb}, and cut extras. Save on progress, quit, and pick up ${W}.`;
-}
-function plannerText(pct, topic, seed, q){
-  const tb = timebox(topic), A = seed.artifact, W = seed.window;
-  const conditionalStart = (seededHash(q) % 2)===0;
-  const open = conditionalStart ? `If you move forward, map first.` : `Map before moving.`;
-  const constraint = `Cap the effort at ${tb} with one checkpoint at halfway.`;
-  const finish = `Log a line in the ${A} and review ${W}.`;
-  return `${open} Break it into a single step, ${constraint} ${finish}`;
-}
-function probeText(topic, seed, q){
-  const tb = timebox(topic), A = seed.artifact, W = seed.window;
-  const q1 = `What exactly are you hoping will change if you do this?`;
-  const q2 = `What would staying put teach you that moving wouldn’t?`;
-  const step = `Try one tiny experiment for ${tb} and write one line in the ${A}; if it warms, schedule time ${W}.`;
-  return `${q1} ${q2} ${step}`;
-}
-function sageText(pct, topic, seed, q){
-  const W = seed.window;
-  // single image budget
-  const image = randFrom(['tide','glimmer','quiet door','low hum','soft light'], seededHash(q));
-  if (pct>=65){
-    return `If the ${image} is steady, begin—and end a step early. Let attention stay soft, not forced. Return ${W} with the echo still warm.`;
-  }
-  if (pct<=45){
-    return `If the ${image} dims when you think of it, pause. Let the night be still; timing gathers when you stop tugging. Look again ${W}.`;
-  }
-  return `Stand at ease and listen. If the ${image} returns twice, that’s your signal; if it scatters, wait. Either way, notice the timing ${W}.`;
-}
-
-/* ============ DIVERSITY GUARD ============ */
-function ngrams(text, n=4){
-  const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
-  const grams=[]; for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
-  return new Set(grams);
-}
-function distanceOk(text, usedSets){
-  const my = ngrams(text,4);
-  for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
-  return true;
-}
-function trimByLen(txt, min=60, max=260){
-  if (txt.length<=max) return txt;
-  const cut = txt.lastIndexOf('.', max);
-  return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
-}
-
-/* ============ RENDER LOOP ============ */
+/* ================== RENDER LOOP ================== */
 function setLoading(on){
+  state.loading = on;
   askBtn.disabled = on; shakeBtn.disabled = on;
   orbMsg.textContent = on ? "…" : "ASK A QUESTION";
-  if(on) renderSkeletons();
+  if (on) renderSkeletons();
 }
 
-async function renderVoices(question){
+function render(){
+  // narrative
+  if (state.narrative){
+    narrativeBox.hidden = false;
+    narrativeText.textContent = state.narrative;
+  } else {
+    narrativeBox.hidden = true;
+    narrativeText.textContent = '';
+  }
+
+  // fields
+  responsesEl.innerHTML = '';
+  FIELDS.forEach(def=>{
+    const val = state.fields[def.key];
+    const card = createFieldCard(def, val);
+    responsesEl.appendChild(card);
+  });
+}
+
+async function runQuery(q){
   setLoading(true);
   try{
-    const topic = detectTopic(question);
-    const seed = extractSeed(question, topic);
-    const base = baseYes(question, topic);
-    const used = [];
-    responsesEl.innerHTML = '';
-
-    // deterministic artifact cycling for regen variety
-    const artPool = [...(ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general)];
-    const artAt = (i)=> artPool[i % artPool.length];
-
-    VOICES.forEach((v, idx)=>{
-      const placeholder = document.createElement('div');
-      placeholder.className = `persona-card skeleton ${cardClass(v.id)}`;
-      placeholder.innerHTML = `
-        <div class="head"><span class="pill role">${v.label}</span><span class="pill" style="opacity:.75">Generating…</span></div>
-        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
-      `;
-      responsesEl.appendChild(placeholder);
-
-      (async()=>{
-        // local synth (you can swap to backend by posting {voice, controls} here)
-        const pct = voicePct(v.id, base);
-        const localSeed = { artifact: artAt(idx), window: seed.window };
-
-        let text =
-          v.id==='driver' ? driverText(pct??base, topic, localSeed, question) :
-          v.id==='planner' ? plannerText(pct??base, topic, localSeed, question) :
-          v.id==='probe'   ? probeText(topic, localSeed, question) :
-                             sageText(pct??base, topic, localSeed, question);
-
-        // diversity guard
-        let tries=0;
-        while(!distanceOk(text, used) && tries<2){
-          text = text.replace(/\.$/,'') + (v.id==='probe' ? ' Note what surprised you.' : ' Make it one step smaller.');
-          text = trimByLen(text);
-          tries++;
-        }
-        used.push(ngrams(text,4));
-
-        const card = createCard({
-          voice: v.id,
-          label: v.label,
-          badge: v.badge,
-          pct: (v.id==='probe'? null : pct),
-          text,
-          onClick: async ()=>{
-            // regenerate this voice with rotated artifact
-            const again = { artifact: artAt(idx+1), window: seed.window };
-            const p2 = voicePct(v.id, base);
-            let t2 =
-              v.id==='driver' ? driverText(p2??base, topic, again, question) :
-              v.id==='planner' ? plannerText(p2??base, topic, again, question) :
-              v.id==='probe'   ? probeText(topic, again, question) :
-                                 sageText(p2??base, topic, again, question);
-            card.querySelector('.body').textContent = t2;
-            if (v.id!=='probe') card.querySelector('.odds').textContent = `${p2}%`;
-          }
-        });
-        placeholder.replaceWith(card);
-      })();
-    });
-
+    state.question = q;
+    const result = await fetchDecision(q);
+    state.narrative = result.narrative || '';
+    state.fields = {
+      probability: result.probability ?? null,
+      confidence:  result.confidence ?? null,
+      advice:      result.advice ?? '',
+      caveats:     result.caveats ?? ''
+    };
     shakeOrb();
-  } finally {
+  } catch(err){
+    state.narrative = "Sorry—something went wrong. Try again or check your network/API key.";
+    state.fields = { probability:null, confidence:null, advice:"", caveats:"" };
+    console.error(err);
+  } finally{
     setLoading(false);
+    render();
   }
 }
 
 /* ================== EVENTS ================== */
 document.getElementById('shake-btn').addEventListener('click', ()=>{
   const q = inputEl.value.trim() || "Surprise me";
-  renderVoices(q);
+  runQuery(q);
 });
 document.getElementById('question-form').addEventListener('submit', (e)=>{
   e.preventDefault();
   const q = inputEl.value.trim() || "Surprise me";
-  renderVoices(q);
+  runQuery(q);
 });
 </script>
 </body>
 </html>
+
+
 
 
 

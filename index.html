@@ -13,10 +13,14 @@
       --border: #333;
       --accent: #33cc99;
       --accent-hover: #2ab386;
-      --triW: 160px;
-      --triH: 140px;
+      --triW: 160px;   /* triangle total width */
+      --triH: 140px;   /* triangle height */
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -24,14 +28,16 @@
       color: var(--fg);
       min-height: 100vh;
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
+      grid-template-rows: auto auto 1fr auto; /* hero, demo, signup, footer */
       align-items: start;
     }
+
     .hero {
       display: grid;
       place-items: center;
       padding: 2.25rem 1.25rem 0.75rem;
     }
+
     .hero img {
       width: min(70vw, 500px);
       max-height: 45vh;
@@ -42,6 +48,7 @@
       -webkit-user-drag: none;
     }
 
+    /* Demo Card */
     .demo {
       margin: 0.5rem auto 0;
       padding: 1.5rem 1.25rem 2rem;
@@ -52,6 +59,7 @@
       box-shadow: 0 24px 50px rgba(0,0,0,.35);
     }
 
+    /* Mystical Eight Ball */
     .oracle-wrap {
       position: relative;
       display: grid;
@@ -61,13 +69,15 @@
       overflow: visible;
     }
 
+    /* Floating sparkly mist */
     .mist,
     .mist::before,
     .mist::after {
       content: "";
       position: absolute;
       pointer-events: none;
-      width: 520px; height: 520px;
+      width: 520px;
+      height: 520px;
       border-radius: 50%;
       filter: blur(26px);
       background:
@@ -78,9 +88,27 @@
       opacity: .6;
       transform: translate3d(0,0,0);
     }
-    .mist { top: -40px; left: 50%; transform: translateX(-50%); }
-    .mist::before { top: -30px; left: -80px; animation-duration: 22s; animation-direction: reverse; }
-    .mist::after  { top:  10px; left:  80px; animation-duration: 26s; opacity: .5; }
+
+    .mist {
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .mist::before {
+      top: -30px;
+      left: -80px;
+      animation-duration: 22s;
+      animation-direction: reverse;
+    }
+
+    .mist::after {
+      top: 10px;
+      left: 80px;
+      animation-duration: 26s;
+      opacity: .5;
+    }
+
     @keyframes drift {
       0%   { transform: translate(-50%, 0) rotate(0deg); opacity:.55; }
       50%  { transform: translate(-48%, -8px) rotate(6deg); opacity:.8; }
@@ -93,28 +121,46 @@
       height: min(68vw, 360px);
       border-radius: 50%;
       background: radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
-      box-shadow: inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
+      box-shadow:
+        inset 0 -20px 40px rgba(0,0,0,.7),
+        0 30px 60px rgba(0,0,0,.45);
       display: grid;
       place-items: center;
       overflow: hidden;
       transition: transform .2s cubic-bezier(.2,.8,.2,1);
     }
+
+    /* sheen */
     .eightball::before {
       content: "";
       position: absolute;
-      top: 6%; left: 12%;
-      width: 40%; height: 28%;
-      background: radial-gradient(ellipse at top left, rgba(255,255,255,.22), rgba(255,255,255,0));
+      top: 6%;
+      left: 12%;
+      width: 40%;
+      height: 28%;
+      background: radial-gradient(
+        ellipse at top left,
+        rgba(255,255,255,.22),
+        rgba(255,255,255,0)
+      );
       filter: blur(4px);
       transform: rotate(-12deg);
       pointer-events: none;
     }
-    .window{
-      position: relative; width:50%; height:50%; border-radius:50%;
+
+    .window {
+      position: relative;
+      width: 50%;
+      height: 50%;
+      border-radius: 50%;
       background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
       box-shadow: inset 0 0 40px rgba(0,0,0,.9);
-      display:grid; place-items:center; border:2px solid #0f2a3a; overflow:hidden;
+      display: grid;
+      place-items: center;
+      border: 2px solid #0f2a3a;
+      overflow: hidden;
     }
+
     .window::before {
       content: "";
       position: absolute;
@@ -125,21 +171,41 @@
       z-index: 1;
     }
 
+    /* Inner mist inside the circular window */
+    .window::after {
+      content: "";
+      position: absolute;
+      inset: -99%;
+      opacity: 0.05;
+      background:
+        radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
+        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.10), transparent 60%),
+        radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
+      filter: blur(18px) saturate(1.05);
+      mix-blend-mode: screen;
+      animation: swirl 22s ease-in-out infinite;
+      pointer-events: none;
+      border-radius: 50%;
+      clip-path: circle(50% at 50% 50%);
+    }
+
     .triangle {
       position: absolute;
       left: 50%;
-      top: 58%;
+      top: 58%; /* slightly lower to look centered */
       transform: translate(-50%, -50%);
-      width: 0; height: 0;
+      width: 0;
+      height: 0;
       border-left: calc(var(--triW) / 2) solid transparent;
       border-right: calc(var(--triW) / 2) solid transparent;
       border-top: var(--triH) solid #163a5a;
       filter: drop-shadow(0 6px 10px rgba(0,0,0,.6));
     }
+
     .triangle .msg {
       position: absolute;
       left: 50%;
-      top: calc(-1 * var(--triH) * 0.72);
+      top: calc(-1 * var(--triH) * 0.72); /* pull text up into the triangle */
       transform: translateX(-50%);
       width: calc(var(--triW) * 0.8);
       text-align: center;
@@ -152,6 +218,32 @@
       margin: 0 auto;
     }
 
+    /* Mist inside the triangle only (masked with clip-path) */
+    .triangle::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: calc(-1 * var(--triH));
+      transform: translateX(-50%);
+      width: var(--triW);
+      height: var(--triH);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background:
+        radial-gradient(200px 200px at 65% 60%, rgba(180,220,255,.20), transparent 40%),
+        radial-gradient(200px 200px at 65% 75%, rgba(51,204,153,.20), transparent 40%);
+      filter: blur(10px);
+      mix-blend-mode: screen;
+      opacity: .7;
+      animation: swirl 18s ease-in-out infinite reverse;
+      pointer-events: none;
+    }
+
+    @keyframes swirl {
+      0%   { transform: translateX(-50%) rotate(0deg); opacity:.6; }
+      50%  { transform: translateX(-50%) rotate(5deg); opacity:.85; }
+      100% { transform: translateX(-50%) rotate(0deg); opacity:.6; }
+    }
+
     .qa {
       display: flex;
       gap: 0.5rem;
@@ -159,9 +251,18 @@
       justify-content: center;
       margin: 1rem 0 0.25rem;
     }
-    .helper { color: var(--muted); margin: 0.25rem 0 0.75rem; text-align: center; }
 
-    .readout { text-align: center; margin: 0.5rem 0 0; line-height: 1.45; }
+    .helper {
+      color: var(--muted);
+      margin: 0.25rem 0 0.75rem;
+      text-align: center;
+    }
+
+    .readout {
+      text-align: center;
+      margin: 0.5rem 0 0;
+      line-height: 1.45;
+    }
 
     /* Scrollable responses area */
     .responses-wrap {
@@ -173,30 +274,38 @@
       overflow: auto;
       padding: 0.5rem;
     }
+
     .responses-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 0.5rem;
     }
-    @media (min-width: 680px){
-      .responses-grid { grid-template-columns: 1fr 1fr; }
+
+    @media (min-width: 680px) {
+      .responses-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
+
     .persona-card {
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 0.75rem 0.9rem;
       background: linear-gradient(180deg, #131313, #0f0f0f);
     }
+
     .persona-card h4 {
       margin: 0 0 0.35rem;
       font-size: 0.95rem;
       color: var(--accent);
       letter-spacing: 0.4px;
     }
+
     .persona-card .odds {
       font-weight: 700;
       margin-bottom: 0.35rem;
     }
+
     .persona-card p {
       margin: 0;
       color: #e3e3e3;
@@ -212,15 +321,18 @@
       padding: 0 1rem;
       margin: 1rem auto 0;
     }
-    input[type="email"], input[type="text"] {
+
+    input[type="email"],
+    input[type="text"] {
       padding: 0.85rem 0.9rem;
       border: none;
       border-radius: 10px;
       min-width: 280px;
       background: #1a1a1a;
-      color: #fff;
+      color: var(--fg);
       outline: 1px solid var(--border);
     }
+
     button {
       padding: 0.9rem 1.2rem;
       border: none;
@@ -232,8 +344,14 @@
       transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
       box-shadow: 0 8px 18px rgba(51,204,153,.25);
     }
-    button:hover { background: var(--accent-hover); }
-    button:active { transform: translateY(1px); }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
 
     footer {
       margin: 1.25rem 0 1.5rem;
@@ -241,63 +359,41 @@
       color: #8a8a8a;
       font-size: 0.95rem;
     }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
 
-    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
 
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Shake animation */
     @keyframes wobble {
-      0%{ transform: rotate(0deg) translateX(0); }
-      20%{ transform: rotate(3deg) translateX(6px); }
-      40%{ transform: rotate(-3deg) translateX(-6px); }
-      60%{ transform: rotate(2deg) translateX(4px); }
-      80%{ transform: rotate(-2deg) translateX(-4px); }
-      100%{ transform: rotate(0deg) translateX(0); }
-    }
-    .shake { animation: wobble .6s ease-in-out; }
-
-    .window::after{
-      content:"";
-      position:absolute;
-      inset:-99%;
-      opacity: 0.05; 
-      background:
-        radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
-        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.10), transparent 60%),
-        radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
-      filter: blur(18px) saturate(1.05);
-      mix-blend-mode: screen;
-      animation: swirl 22s ease-in-out infinite;
-      pointer-events:none;
-      border-radius: 50%;
-      clip-path: circle(50% at 50% 50%);
-    }
-    .triangle::after{
-      content:"";
-      position:absolute;
-      left:50%; top:calc(-1 * var(--triH));
-      transform: translateX(-50%);
-      width: var(--triW); height: var(--triH);
-      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-      background:
-        radial-gradient(200px 200px at 65% 60%, rgba(180,220,255,.20), transparent 40%),
-        radial-gradient(200px 200px at 65% 75%, rgba(51,204,153,.20), transparent 40%);
-      filter: blur(10px);
-      mix-blend-mode: screen;
-      opacity:.7;
-      animation: swirl 18s ease-in-out infinite reverse;
-      pointer-events:none;
-    }
-    @keyframes swirl{
-      0%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
-      50%{ transform: translateX(-50%) rotate(5deg); opacity:.85; }
-      100%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
+      0%   { transform: rotate(0deg) translateX(0); }
+      20%  { transform: rotate(3deg) translateX(6px); }
+      40%  { transform: rotate(-3deg) translateX(-6px); }
+      60%  { transform: rotate(2deg) translateX(4px); }
+      80%  { transform: rotate(-2deg) translateX(-4px); }
+      100% { transform: rotate(0deg) translateX(0); }
     }
 
-    /* outcome border tints (kept; no visual change required to copy) */
-    .demo.tint-good   { border-color: #2ea86b; }
-    .demo.tint-mixed  { border-color: #bda32e; }
-    .demo.tint-risky  { border-color: #c24d4d; }
+    .shake {
+      animation: wobble .6s ease-in-out;
+    }
   </style>
 </head>
 <body>
@@ -307,7 +403,7 @@
   </section>
 
   <!-- DEMO -->
-  <section id="demo" class="demo" role="region" aria-label="AIght Ball demo">
+  <section class="demo" role="region" aria-label="AIght Ball demo">
     <div class="oracle-wrap">
       <div class="mist"></div>
       <div id="orb" class="eightball" aria-hidden="true">
@@ -321,7 +417,13 @@
 
     <form id="question-form" class="qa" autocomplete="off">
       <label class="sr-only" for="user-question">Ask a yes/no question</label>
-      <input id="user-question" type="text" name="question" placeholder="Ask a yes/no question…" maxlength="140" />
+      <input
+        id="user-question"
+        type="text"
+        name="question"
+        placeholder="Ask a yes/no question…"
+        maxlength="140"
+      />
       <button type="submit" aria-label="Ask the AIght Ball">Ask</button>
       <button type="button" id="shake-btn" aria-label="Shake the ball">Shake It</button>
     </form>
@@ -332,465 +434,246 @@
 
     <!-- Scrollable multi-persona responses -->
     <div class="responses-wrap" aria-live="polite">
-      <div id="responses" class="responses-grid"></div>
+      <div id="responses" class="responses-grid">
+        <!-- persona cards inject here -->
+      </div>
     </div>
   </section>
 
   <!-- Signup -->
   <form class="signup" name="signup" method="POST" data-netlify="true">
-    <input type="email" name="email" placeholder="Enter your email for early access" required />
+    <input
+      type="email"
+      name="email"
+      placeholder="Enter your email for early access"
+      required
+    />
     <button type="submit">Notify Me</button>
   </form>
 
   <footer>
-    © 2025 AIght Ball · Follow us on 
+    © 2025 AIght Ball · Follow us on
     <a href="https://instagram.com/aightball.io" target="_blank" rel="noopener">Instagram</a> &
     <a href="https://youtube.com/@aightballio" target="_blank" rel="noopener">YouTube</a>
   </footer>
 
-<script>
-  const orb = document.getElementById('orb');
-  const orbMsg = document.getElementById('orb-msg');
-  const oddsOut = document.getElementById('demo-odds');
-  const textOut = document.getElementById('demo-text');
-  const inputEl = document.getElementById('user-question');
-  const askBtn = document.querySelector('#question-form button[type="submit"]');
-  const shakeBtn = document.getElementById('shake-btn');
-  const responsesEl = document.getElementById('responses');
-  const demoWrap = document.getElementById('demo');
+  <script>
+    const orb = document.getElementById('orb');
+    const orbMsg = document.getElementById('orb-msg');
+    const oddsOut = document.getElementById('demo-odds');
+    const textOut = document.getElementById('demo-text');
+    const inputEl = document.getElementById('user-question');
+    const askBtn = document.querySelector('#question-form button[type="submit"]');
+    const shakeBtn = document.getElementById('shake-btn');
+    const responsesEl = document.getElementById('responses');
 
-  const personas = [
-    { id: 'bold',    label: 'Bold' },
-    { id: 'cautious',label: 'Cautious' },
-    { id: 'neutral', label: 'Neutral / Practical' },
-    { id: 'mystic',  label: 'Mystic' }
-  ];
+    const personas = [
+      { id: 'bold',     label: 'Bold' },
+      { id: 'cautious', label: 'Cautious' },
+      { id: 'neutral',  label: 'Neutral / Practical' },
+      { id: 'mystic',   label: 'Mystic' }
+    ];
 
-  /* ----------------------- Utility helpers ----------------------- */
-
-  function shakeOrb() {
-    orb.classList.remove('shake');
-    void orb.offsetWidth;
-    orb.classList.add('shake');
-  }
-
-  function setLoading(on) {
-    askBtn.disabled = on;
-    shakeBtn.disabled = on;
-    if (on) {
-      orbMsg.textContent = "…";
-      oddsOut.textContent = "🎲 Odds: —";
-      textOut.textContent = "✨ Consulting the orb…";
-      renderPersonaSkeletons();
+    function shakeOrb() {
+      orb.classList.remove('shake');
+      void orb.offsetWidth; // force reflow
+      orb.classList.add('shake');
     }
-  }
 
-  function createCard({label, odds, long}) {
-    const div = document.createElement('div');
-    div.className = 'persona-card';
-    div.innerHTML = `
-      <h4>${label}</h4>
-      <div class="odds">Odds: ${Number.isFinite(odds) ? odds + '%' : '--'}</div>
-      <p>${long}</p>
-    `;
-    return div;
-  }
+    function setLoading(on) {
+      askBtn.disabled = on;
+      shakeBtn.disabled = on;
 
-  function renderPersonaSkeletons(){
-    responsesEl.innerHTML = '';
-    personas.forEach(p=>{
-      const skeleton = document.createElement('div');
-      skeleton.className = 'persona-card';
-      skeleton.innerHTML = `
-        <h4>${p.label}</h4>
-        <div class="odds">Odds: …</div>
-        <p>Thinking…</p>
-      `;
-      responsesEl.appendChild(skeleton);
-    });
-  }
-
-  function fallback() {
-    return {
-      short: "62%",
-      long: "A proactive move is likely to pay off, provided you keep scope contained.",
-      odds: 62
-    };
-  }
-
-  function clamp(n, a=0, b=1){ return Math.min(b, Math.max(a, n)); }
-
-  // Turn a single 0–100 positive odds into 4 persona buckets summing to 100
-  function splitPersonaShares(posOdds){
-    const p = clamp(posOdds/100);          // 0..1
-    const amb = 1 - Math.abs(p - 0.5)*2;   // 1 at 50/50, 0 at extremes
-    let wBold    = 0.55*p + 0.10*amb;
-    let wCaut    = 0.55*(1-p) + 0.10*amb;
-    let wNeutral = 0.80*amb;
-    let wMystic  = Math.max(0, 1 - (wBold+wCaut+wNeutral));
-
-    const S = wBold + wCaut + wNeutral + wMystic || 1;
-    let arr = [wBold/S, wCaut/S, wNeutral/S, wMystic/S].map(x => Math.round(x*100));
-    let diff = 100 - arr.reduce((a,b)=>a+b,0);
-    while (diff !== 0){
-      const idx = diff > 0 ? arr.indexOf(Math.max(...arr)) : arr.indexOf(Math.min(...arr));
-      arr[idx] += diff > 0 ? 1 : -1;
-      diff = 100 - arr.reduce((a,b)=>a+b,0);
-    }
-    return { bold: arr[0], cautious: arr[1], neutral: arr[2], mystic: arr[3] };
-  }
-
-  function tintBorder(posOdds){
-    demoWrap.classList.remove('tint-good','tint-mixed','tint-risky');
-    if (posOdds >= 60) demoWrap.classList.add('tint-good');
-    else if (posOdds <= 40) demoWrap.classList.add('tint-risky');
-    else demoWrap.classList.add('tint-mixed');
-  }
-
-  /* ----------------------- Topic detection ----------------------- */
-
-  function detectTopic(q){
-    const s = (q||'').toLowerCase();
-    const has = (...words)=>words.some(w=>s.includes(w));
-    if (has('email','inbox','reply','work','monday','case','meeting','deck','presentation')) return 'work';
-    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen')) return 'food';
-    if (has('relationship','date','partner','spouse','family','friend','text them','call')) return 'relationship';
-    if (has('gym','run','workout','health','sleep','hydrate','walk','yoga')) return 'health';
-    if (has('money','budget','buy','sell','invest','crypto','stock','cost')) return 'money';
-    if (has('video','stream','write','script','record','edit','channel','shorts','lofi','song')) return 'creative';
-    if (has('trip','travel','flight','hotel','book','drive','commute')) return 'travel';
-    if (has('party','hang','friends','event','invite')) return 'social';
-    return 'general';
-  }
-
-  function pickTimebox(odds){
-    if (odds >= 75) return '45 minutes';
-    if (odds >= 55) return '25 minutes';
-    if (odds >= 35) return '15 minutes';
-    return '10 minutes';
-  }
-
-  /* ----------------------- Narrative generator ----------------------- */
-
-  // Overall ruling line to harmonize with the story distribution
-  function overallRuling(odds, baseLong, topic){
-    const p = Number(odds)||50;
-    const lead =
-      p >= 70 ? 'A strong tailwind favors action.' :
-      p >= 55 ? 'Momentum leans your way if you keep scope tight.' :
-      p > 45  ? 'It could go either way—small bets beat grand plans.' :
-      p > 30  ? 'Headwinds ahead; progress is possible with guardrails.' :
-                'Tonight likely isn’t the move—protect energy and set a clean start.';
-    // brief topic garnish
-    const garnish = {
-      work: ' Aim for visible progress, not inbox zero.',
-      food: ' Decide once, plate simply, and enjoy it.',
-      relationship: ' Lead with one clear ask or appreciation.',
-      health: ' Choose a gentle win over a heroic push.',
-      money: ' Decide the limit first, then act—or wait.',
-      creative: ' Ship a sketch, not a symphony.',
-      travel: ' Lock one decision and close the tab.',
-      social: ' Set a vibe and a boundary.',
-      general: ''
-    }[topic] || '';
-    return `${lead}${garnish}`;
-  }
-
-  // 4–5 sentence micro-stories per persona, tied to topic + polarity
-  function storyFor(personaId, odds, topic){
-    const p = Number(odds)||50;
-    const positive = p >= 60;
-    const negative = p <= 40;
-    const mid = !positive && !negative;
-    const tb = pickTimebox(p);
-
-    const T = {
-      work: {
-        bold: {
-          pos: `You crack the inbox “just to skim” and a rhythm clicks by minute five. ${tb} in, the top stack is cleared, three tricky replies are drafted, and tomorrow’s first meeting suddenly looks trivial. You ride the wave and stop before you’re tired. You’ll sleep lighter and start Monday at cruising speed.`,
-          mid: `You set a quick pass and treat replies like checkpoints. A couple of small wins spark momentum, and you draft short notes to future-you where it’s heavy. You stop on the dot at ${tb}. Monday opens with a map, not a mess.`,
-          neg: `You push anyway and the scope blooms. A few replies land, but fatigue brings diminishing returns. Call the mission after ${tb} and leave yourself one sticky note: “Top 3 at 9:30.” The win is discipline, not volume.`
-        },
-        cautious: {
-          pos: `You time-box to ${tb} and hunt “under two-minute” replies only. Archive ruthlessly, star sparingly, and keep the subject lines honest. You stop exactly when the timer sings. Tomorrow you’ll see clean lanes instead of noise.`,
-          mid: `You triage, not tackle: flags, folders, and three calendar blocks for the heavy hitters. The inbox isn’t smaller, but it’s sorted. You end on purpose and keep your evening intact. Morning-you nods in approval.`,
-          neg: `You sense the drag and choose containment: scan for fires, log two must-dos, and close the lid. No heroics tonight. The real play is a fresh head and a tight 30-minute sweep in the morning.`
-        },
-        neutral: {
-          pos: `You start with a miniature stand-up: “What moves the needle in ${tb}?” You clear surface sand and leave breadcrumbs in the big threads. It’s not flashy, but tomorrow has fewer snags. Practical progress beats perfection.`,
-          mid: `You sort by impact and set three “blocks” on the calendar. Replies wait; clarity doesn’t. The outcome is a simple map and a calmer Monday. You’ll thank yourself at 9am.`,
-          neg: `You notice that every reply spawns two more. You choose to plan instead of plow: one pass for fires, one pass for labels, then done. The win is preventing a late-night rabbit hole.`
-        },
-        mystic: {
-          pos: `A small synchronicity appears—a quick answer you needed drops in, or a thread closes itself after months. You follow that green light long enough to capture momentum. Then you stop one step early. Leave a single line to future-you and trust the tide to return.`,
-          mid: `Two tides meet: the urge to clear and the pull to rest. You listen for the quieter current and make one decisive move—schedule the block, star the signal, archive the noise. You close the lid with a steadier heart.`,
-          neg: `A nudge says “not tonight.” You jot the top three, set a gentle alarm, and guard the evening like a resource. The path clears when the mind is clear; sleep is part of the plan.`
-        }
-      },
-      food: {
-        bold: {
-          pos: `You pick a dish in under a minute and heat pans like a countdown. ${tb} later you’re plating something simple and absurdly satisfying. You clean as you go and cue a show. The win is flavor plus momentum.`,
-          mid: `You commit to a one-pan fix and let spices do the heavy lifting. It’s quick, warm, and better than delivery. You stop at enough and save room for tomorrow’s energy.`,
-          neg: `You feel the stall; you outsmart it with “assemble, don’t cook.” Bowl, protein, drizzle. The point isn’t culinary glory—it’s care on a plate.`
-        },
-        cautious: {
-          pos: `You scan the fridge and choose the safe combo you always like. Timer set to ${tb}, no experiments. You finish with dishes at zero. Quiet competence is on the menu.`,
-          mid: `You prep tomorrow by chopping tonight: half the work now, half later. You eat lighter and end earlier. Future-you gets the feast.`,
-          neg: `You punt nicely: tea, fruit, and a plan for lunch. You’ll thank yourself in the morning. Satisfaction comes from choosing peace over chaos.`
-        },
-        neutral: {
-          pos: `You portion without drama and savor the small decision well made. It’s good enough and on time. Tomorrow’s rhythm starts tonight.`,
-          mid: `You let hunger guide but set a ceiling. A simple bowl, a simple cleanup, a simple yes. The point is nourishment, not negotiation.`,
-          neg: `You recognize the cost curve and set it down. A light snack and an early turn-in outperform a heavy cook. You trade flavor fireworks for steady fuel.`
-        },
-        mystic: {
-          pos: `A craving aligns with what’s on hand—no errands, no friction. You follow it, plate it, bless it. The moment tastes better because it’s easy.`,
-          mid: `The kitchen hums quietly and you match it. You prepare a base for tomorrow and keep tonight gentle. The ritual is the meal.`,
-          neg: `Your body says “rest over recipe.” You listen. Warm mug, soft landing, clear morning.`
-        }
-      },
-      relationship: {
-        bold: {
-          pos: `You send the message you’ve been drafting in your head and keep it specific. A genuine reply opens quickly and you lean into the good. You close with a simple next step and no pressure. Warmth compounds overnight.`,
-          mid: `You reach out light and honest—no speeches, just a single truth. A small exchange resets tone. You leave space and let it breathe.`,
-          neg: `You’re tempted to “solve,” but you pick kindness and timing instead. One note of appreciation lands better than a late-night autopsy. You choose connection over control.`
-        },
-        cautious: {
-          pos: `You share a feeling, not a verdict, and ask one curious question. The conversation moves without overheating. You set a time to revisit with full energy.`,
-          mid: `You acknowledge the mood and set a gentle boundary. The evening stays kind; the topic gets a better home tomorrow. You protect the relationship and your rest.`,
-          neg: `You choose not to text into the spiral. Draft it, save it, sleep on it. Clarity likes daylight.`
-        },
-        neutral: {
-          pos: `You aim for a small positive loop: one appreciation sent, one plan proposed. It’s modest and real. Tomorrow has a friendlier slope.`,
-          mid: `You keep it neutral but caring: “thinking of you, no need to reply.” The line lands without obligation. That’s the point.`,
-          neg: `You park the heavy lift and leave a breadcrumb of care. You’ll take the bridge when you can truly cross it.`
-        },
-        mystic: {
-          pos: `A song, photo, or memory surfaces and hands you the perfect opener. You share it, smile, and stop there. The current does the rest.`,
-          mid: `You feel both the want to fix and the wisdom to wait. You send a gentle signal and tend to your own calm. Space becomes safety.`,
-          neg: `Your intuition says silence is kind tonight. You trust it. The right moment will find you.`
-        }
-      },
-      health: {
-        bold: {
-          pos: `You roll the mat out and start moving before the mind can argue. By ${tb}, sweat and breathe have rinsed the day from your system. You sleep like someone who chose themselves. Tomorrow greets you lighter.`,
-          mid: `You choose an easy circuit and win by starting. It’s not heroic; it’s honest. You stop early and feel proud instead of spent.`,
-          neg: `You flirt with a push, then listen deeper. Stretch, hydrate, lights down. Recovery is a valid training day.`
-        },
-        cautious: {
-          pos: `You cap the session at ${tb} and keep form clean. Enough to glow, not enough to tax. Your body thanks you in the morning.`,
-          mid: `You walk the block and call it victory. The point is continuity, not conquest. The streak survives.`,
-          neg: `You choose warm-down over workout: mobility, breath, sleep ritual. Health is a system; you nourished it.`
-        },
-        neutral: {
-          pos: `You pick one pillar—movement, water, or sleep—and nail it. A small lever moves a big day. It’s enough.`,
-          mid: `You do the floor version of the plan and that’s perfect. Consistency counts, ego doesn’t. Tomorrow builds on this.`,
-          neg: `You skip the grind and do care instead. That’s training, too.`
-        },
-        mystic: {
-          pos: `A tiny burst of energy arrives unannounced. You spend it wisely, quit while ahead, and lock in the win. The body whispers “thank you.”`,
-          mid: `You notice where you hold the day and let it soften. Breath becomes the workout; ease becomes the result. Sleep will do the rest.`,
-          neg: `Your system asks for stillness and you say yes. Healing is motion you can’t see.`
-        }
-      },
-      money: {
-        bold: {
-          pos: `You act on a pre-decided rule and place the order without doom-scrolling. The decision is small and reversible. You log it and move on with no mental tax.`,
-          mid: `You split the decision: research tonight, commit tomorrow. You keep the appetite but remove the impulse.`,
-          neg: `You write the rule you wish you had followed and set an alert. Patience pays you back in clarity.`
-        },
-        cautious: {
-          pos: `You budget the move and pre-cap the risk. You execute cleanly and stop. The win is control, not thrill.`,
-          mid: `You sandbox: simulate, don’t spend. If the numbers smile in the morning, you’ll proceed.`,
-          neg: `You bow out tonight with pride. Not buying is also a buy.`
-        },
-        neutral: {
-          pos: `You choose the smallest version of the thing and measure how it feels. Data over drama. You can scale later.`,
-          mid: `You create a “tomorrow test”: if you still want it after coffee, it passes. Many urges fail this exam.`,
-          neg: `You capture the want in a list and close the tab. Lists are cheaper than lessons.`
-        },
-        mystic: {
-          pos: `A deal aligns with your rule and timing. You take it, log it, and don’t chase. The market doesn’t own your mood.`,
-          mid: `Signals conflict; you honor that with a pause. You’ll see it clearer in daylight.`,
-          neg: `Your gut says “not this one.” You listen—and avoid a story you’d rather not tell.`
-        }
-      },
-      creative: {
-        bold: {
-          pos: `You hit record before you overthink and speak like you’re already live. ${tb} gives you a strong take and a thumbnail idea. You stop while the spark is bright. Posting tomorrow will feel easy.`,
-          mid: `You draft beats and a hook line, then riff a short run. It’s raw and promising. You save the good bits and call it a win.`,
-          neg: `You’re chasing perfect; you pivot to playful. One messy take, one title, then bed. Momentum over masterpiece.`
-        },
-        cautious: {
-          pos: `You outline in bullets and set a simple frame. You leave gaps for tomorrow’s better words. The container is the victory.`,
-          mid: `You pull references and drop them into a doc. The puzzle will click faster later. You keep the night light.`,
-          neg: `You archive the session and choose rest. The idea deserves a clear lens.`
-        },
-        neutral: {
-          pos: `You do one repeatable unit: intro hook, CTA, or B-roll. The machine warms without burning fuel. Tomorrow, it purrs.`,
-          mid: `You tag and title prior work for 15 minutes. Organization is creativity’s oxygen.`,
-          neg: `You set a micro-goal you can’t miss, do it, and stop. The streak lives.`
-        },
-        mystic: {
-          pos: `A phrase lands fully formed; you catch it like a firefly. Jar it, label it, lights out. Inspiration loves those who end early.`,
-          mid: `You sense the quiet idea under the loud one. You trace its outline and promise to return. That promise is real progress.`,
-          neg: `You wait on purpose. Some seeds sprout in sleep.`
-        }
-      },
-      travel: {
-        bold: {
-          pos: `You lock one non-refundable that forces momentum. The plan becomes real and your mood lifts. You stop before spiraling into tabs. Tomorrow is for details.`,
-          mid: `You choose dates and a neighborhood; that’s enough. The skeleton holds. You close the browser with a grin.`,
-          neg: `You pause the purchase and list your must-haves. Good trips don’t start with anxiety; they start with alignment.`
-        },
-        cautious: {
-          pos: `You set a budget and test one itinerary inside it. Numbers work; you screenshot and step away. Pleasure grows in measured steps.`,
-          mid: `You collect options and label pros/cons. Decision belongs to tomorrow’s clarity.`,
-          neg: `You save three links and quit. Fewer choices, better trip.`
-        },
-        neutral: {
-          pos: `You book the piece that’s safest to lock. Momentum without regret. Everything else can flex.`,
-          mid: `You calendar a decision block and stop. Planning is also a task; you handled it.`,
-          neg: `You punt with purpose: one note to future-you, then rest.`
-        },
-        mystic: {
-          pos: `A perfect window opens—points line up, dates align. You take it and smile. The universe loves a traveler with a plan.`,
-          mid: `You notice the tug but wait for one more sign. You’ll know it when it clicks.`,
-          neg: `Your gut says “hold.” You honor it. The right trip doesn’t need to be wrestled into being.`
-        }
-      },
-      general: {
-        bold: {
-          pos: `You act within ${tb} and let momentum carry the rest. A couple of crisp decisions unblock the path. You stop early, on purpose. Confidence compounds.`,
-          mid: `You pick the single lever and pull it hard. It moves enough to matter. You leave the rest untouched.`,
-          neg: `You swing once and call it. Even a clean miss teaches range. You protect the evening for the next attempt.`
-        },
-        cautious: {
-          pos: `You fence the task and keep it small. It fits; it works; you’re done. Quiet competence wins.`,
-          mid: `You test a slice and observe. Data over drama, then decide.`,
-          neg: `You skip the trap and plan the route. Restraint is a kind of progress.`
-        },
-        neutral: {
-          pos: `You organize the board so tomorrow’s move is obvious. Clarity beats volume. You end with a checklist and a calm mind.`,
-          mid: `You reduce friction: labels, order, next step. The task shrinks to your size.`,
-          neg: `You resist forcing it. One breadcrumb for future-you is plenty.`
-        },
-        mystic: {
-          pos: `You catch a lucky gust and ride it lightly. Stop before the gust becomes a gale. Leave a note; keep the magic.`,
-          mid: `Two paths look equal; you choose the quieter one. It reveals the next stone.`,
-          neg: `You wait a beat and feel the system settle. Stillness is the move tonight.`
-        }
+      if (on) {
+        orbMsg.textContent = "…";
+        oddsOut.textContent = "🎲 Odds: —";
+        textOut.textContent = "✨ Consulting the orb…";
+        renderPersonaSkeletons();
       }
-    };
-
-    const B = T[topic] || T.general;
-    const voice = B[personaId];
-
-    if (positive) return voice.pos;
-    if (negative) return voice.neg;
-    return voice.mid;
-  }
-
-  /* ----------------------- Backend bridge ----------------------- */
-
-  async function fetchReading(question, personaId){
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    try{
-      const resp = await fetch("/api/reading", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(personaId ? { question, persona: personaId } : { question }),
-        signal: controller.signal
-      });
-      const data = await resp.json().catch(()=>null);
-      return data || null;
-    } catch(e){
-      return null;
-    } finally {
-      clearTimeout(timer);
     }
-  }
 
-  /* ---------------------------- Main flow ---------------------------- */
-
-  async function askAightBall(question) {
-    setLoading(true);
-    try {
-      const baseData = await fetchReading(question, null);
-      const f = fallback();
-
-      const odds = Number.isFinite(Number(baseData?.odds))
-        ? Math.max(0, Math.min(100, Math.round(baseData.odds)))
-        : 50;
-
-      const topic = detectTopic(question);
-
-      // Overall ruling shaped to match the story system
-      const overall = (typeof baseData?.long === "string" && baseData.long.trim())
-        ? overallRuling(odds, baseData.long.trim(), topic)
-        : overallRuling(odds, f.long, topic);
-
-      const short = /^\d{1,3}%$/.test(String(baseData?.short))
-        ? String(baseData.short)
-        : `${odds}%`;
-
-      oddsOut.textContent = `🎲 Odds: ${odds}%`;
-      textOut.textContent = `✨ ${overall}`;
-      orbMsg.textContent = short;
-      shakeOrb();
-      tintBorder(odds);
-
-      // Persona distribution and narrative stories (sum = 100)
-      const shares = splitPersonaShares(odds);
-      responsesEl.innerHTML = '';
-
-      [
-        { id:'bold',    label:'Bold',               pct: shares.bold    },
-        { id:'cautious',label:'Cautious',           pct: shares.cautious},
-        { id:'neutral', label:'Neutral / Practical',pct: shares.neutral },
-        { id:'mystic',  label:'Mystic',             pct: shares.mystic  }
-      ].forEach(row=>{
-        const story = storyFor(row.id, odds, topic);
-        responsesEl.appendChild(createCard({
-          label: row.label,
-          odds: row.pct,
-          long: story
-        }));
-      });
-
-    } catch (e) {
-      const f = fallback();
-      oddsOut.textContent = `🎲 Odds: ${f.odds}%`;
-      textOut.textContent = `✨ ${f.long}`;
-      orbMsg.textContent = f.short;
-      shakeOrb();
-
-      responsesEl.innerHTML = '';
-      personas.forEach(p=>{
-        responsesEl.appendChild(createCard({
-          label: p.label,
-          odds: f.odds,
-          long: storyFor(p.id, f.odds, 'general')
-        }));
-      });
-      console.warn("AIght Ball fallback (timeout/network):", e);
-    } finally {
-      setLoading(false);
+    function fallback() {
+      return {
+        short: "62%",
+        long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
+        odds: 62
+      };
     }
-  }
 
-  document.getElementById('shake-btn').addEventListener('click', () => {
-    const q = inputEl.value.trim() || "Surprise me";
-    askAightBall(q);
-  });
+    // persona-specific wrapper if backend ignores persona
+    function wrapByPersona(baseLong, personaId, question) {
+      const q = (question || '').toLowerCase();
 
-  document.getElementById('question-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const q = inputEl.value.trim() || "Surprise me";
-    askAightBall(q);
-  });
-</script>
+      const tag =
+        personaId === 'bold'     ? "Play it strong: " :
+        personaId === 'cautious' ? "Proceed, but hedge: " :
+        personaId === 'neutral'  ? "Practical take: " :
+                                   "The currents whisper: ";
+
+      let finisher = " Keep your energy and boundaries clear.";
+
+      if (q.includes('dinner') || q.includes('food') || q.includes('eat')) {
+        finisher = " Try one concrete step tonight (pick a dish, set a time, go).";
+      } else if (q.includes('relationship') || q.includes('date') || q.includes('partner')) {
+        finisher = " Name a need, ask a question, and give space for a real answer.";
+      } else if (q.includes('job') || q.includes('career') || q.includes('work')) {
+        finisher = " Make one measurable move in the next 48 hours.";
+      }
+
+      return tag + baseLong.replace(/\s+$/, '') + finisher;
+    }
+
+    function createCard({ label, odds, long }) {
+      const div = document.createElement('div');
+      div.className = 'persona-card';
+      div.innerHTML = `
+        <h4>${label}</h4>
+        <div class="odds">Odds: ${Number.isFinite(odds) ? odds + '%' : '--'}</div>
+        <p>${long}</p>
+      `;
+      return div;
+    }
+
+    function renderPersonaSkeletons() {
+      responsesEl.innerHTML = '';
+      personas.forEach(p => {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'persona-card';
+        skeleton.innerHTML = `
+          <h4>${p.label}</h4>
+          <div class="odds">Odds: …</div>
+          <p>Thinking…</p>
+        `;
+        responsesEl.appendChild(skeleton);
+      });
+    }
+
+    async function fetchReading(question, personaId) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+
+      try {
+        const body = personaId
+          ? { question, persona: personaId }
+          : { question };
+
+        const resp = await fetch("/api/reading", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+
+        const data = await resp.json().catch(() => null);
+        return data || null;
+      } catch (e) {
+        return null;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function clampOdds(value, fallbackOdds) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return fallbackOdds;
+      return Math.max(0, Math.min(100, Math.round(num)));
+    }
+
+    async function askAightBall(question) {
+      setLoading(true);
+
+      try {
+        // base reading
+        const baseData = await fetchReading(question, null);
+        const f = fallback();
+
+        const odds = clampOdds(baseData?.odds, f.odds);
+        const long =
+          typeof baseData?.long === "string" && baseData.long.trim()
+            ? baseData.long.trim()
+            : f.long;
+
+        const short =
+          /^\d{1,3}%$/.test(String(baseData?.short))
+            ? String(baseData.short)
+            : `${odds}%`;
+
+        oddsOut.textContent = `🎲 Odds: ${odds}%`;
+        textOut.textContent =
+          `✨ ${long}` +
+          (baseData?.debug ? ` (debug: ${JSON.stringify(baseData.debug)})` : "");
+        orbMsg.textContent = short;
+        shakeOrb();
+
+        // persona calls in parallel
+        const personaPromises = personas.map(async (p) => {
+          const d = await fetchReading(question, p.id);
+
+          const pOdds = clampOdds(d?.odds, odds);
+          const pLong =
+            typeof d?.long === "string" && d.long.trim()
+              ? d.long.trim()
+              : wrapByPersona(long, p.id, question);
+
+          return {
+            label: p.label,
+            odds: pOdds,
+            long: pLong
+          };
+        });
+
+        const results = await Promise.allSettled(personaPromises);
+
+        responsesEl.innerHTML = '';
+        results.forEach((res, idx) => {
+          const personaMeta = personas[idx];
+          if (res.status === 'fulfilled' && res.value) {
+            responsesEl.appendChild(createCard(res.value));
+          } else {
+            responsesEl.appendChild(
+              createCard({
+                label: personaMeta.label,
+                odds,
+                long: wrapByPersona(long, personaMeta.id, question)
+              })
+            );
+          }
+        });
+      } catch (e) {
+        const f = fallback();
+        oddsOut.textContent = `🎲 Odds: ${f.odds}%`;
+        textOut.textContent = `✨ ${f.long}`;
+        orbMsg.textContent = f.short;
+        shakeOrb();
+
+        responsesEl.innerHTML = '';
+        personas.forEach(p => {
+          responsesEl.appendChild(
+            createCard({
+              label: p.label,
+              odds: f.odds,
+              long: wrapByPersona(f.long, p.id, question)
+            })
+          );
+        });
+
+        console.warn("AIght Ball fallback (timeout/network):", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    shakeBtn.addEventListener('click', () => {
+      const q = inputEl.value.trim() || "Surprise me";
+      askAightBall(q);
+    });
+
+    document.getElementById('question-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = inputEl.value.trim() || "Surprise me";
+      askAightBall(q);
+    });
+  </script>
 </body>
 </html>
 

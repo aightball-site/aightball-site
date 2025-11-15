@@ -1,316 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AIght Ball – Coming Soon</title>
   <style>
-    :root {
-      --bg: #0d0d0d;
-      --fg: #f2f2f2;
-      --muted: #bbbbbb;
-      --card: #111111;
-      --border: #333;
-      --accent: #33cc99;
-      --accent-hover: #2ab386;
-      --triW: 160px;
-      --triH: 140px;
+    :root{
+      --bg:#0d0d0d; --fg:#f2f2f2; --muted:#bbbbbb; --card:#111111; --border:#333;
+      --accent:#33cc99; --accent-hover:#2ab386; --triW:160px; --triH:140px;
+      --bold:#2dd4bf; --bold-ink:#05201c;
+      --caut:#f2c94c; --caut-ink:#221c08;
+      --neut:#7aa0b4; --neut-ink:#07131a;
+      --myst:#a78bfa; --myst-ink:#1a0f2b;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
-      color: var(--fg);
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      align-items: start;
-    }
-    .hero {
-      display: grid;
-      place-items: center;
-      padding: 2.25rem 1.25rem 0.75rem;
-    }
-    .hero img {
-      width: min(70vw, 500px);
-      max-height: 45vh;
-      object-fit: contain;
-      border-radius: 24px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-      user-select: none;
-      -webkit-user-drag: none;
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; font-family:Arial,Helvetica,sans-serif;
+      background:radial-gradient(1200px 800px at 50% -10%, #1a1a1a, var(--bg));
+      color:var(--fg); min-height:100vh; display:grid;
+      grid-template-rows:auto auto 1fr auto; align-items:start;
     }
 
-    .demo {
-      margin: 0.5rem auto 0;
-      padding: 1.5rem 1.25rem 2rem;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      width: min(92vw, 720px);
-      background: linear-gradient(180deg, #121212, var(--card));
-      box-shadow: 0 24px 50px rgba(0,0,0,.35);
+    /* Hero */
+    .hero{ display:grid; place-items:center; padding:2.25rem 1.25rem 0.75rem; }
+    .hero img{
+      width:min(70vw,500px); max-height:45vh; object-fit:contain; border-radius:24px;
+      box-shadow:0 30px 80px rgba(0,0,0,.5); user-select:none; -webkit-user-drag:none;
     }
 
-    .oracle-wrap {
-      position: relative;
-      display: grid;
-      place-items: center;
-      margin-bottom: 1rem;
-      padding: 1rem 0;
-      overflow: visible;
+    /* Demo container */
+    .demo{
+      margin:0.5rem auto 0; padding:1.5rem 1.25rem 2rem; border:1px solid var(--border);
+      border-radius:20px; width:min(92vw, 720px); background:linear-gradient(180deg,#121212,var(--card));
+      box-shadow:0 24px 50px rgba(0,0,0,.35);
     }
 
-    .mist,
-    .mist::before,
-    .mist::after {
-      content: "";
-      position: absolute;
-      pointer-events: none;
-      width: 520px; height: 520px;
-      border-radius: 50%;
-      filter: blur(26px);
+    /* Orb */
+    .oracle-wrap{ position:relative; display:grid; place-items:center; margin-bottom:1rem; padding:1rem 0; overflow:visible; }
+    .mist, .mist::before, .mist::after{
+      content:""; position:absolute; pointer-events:none; width:520px; height:520px; border-radius:50%; filter:blur(26px);
       background:
         radial-gradient(120px 120px at 30% 40%, rgba(51,204,153,.12), transparent 10%),
         radial-gradient(180px 180px at 70% 30%, rgba(100,180,255,.10), transparent 10%),
         radial-gradient(140px 140px at 50% 70%, rgba(255,255,255,.06), transparent 10%);
-      animation: drift 18s ease-in-out infinite;
-      opacity: .6;
-      transform: translate3d(0,0,0);
+      animation:drift 18s ease-in-out infinite; opacity:.6; transform:translate3d(0,0,0);
     }
-    .mist { top: -40px; left: 50%; transform: translateX(-50%); }
-    .mist::before { top: -30px; left: -80px; animation-duration: 22s; animation-direction: reverse; }
-    .mist::after  { top:  10px; left:  80px; animation-duration: 26s; opacity: .5; }
-    @keyframes drift {
-      0%   { transform: translate(-50%, 0) rotate(0deg); opacity:.55; }
-      50%  { transform: translate(-48%, -8px) rotate(6deg); opacity:.8; }
-      100% { transform: translate(-50%, 0) rotate(0deg); opacity:.55; }
+    .mist{ top:-40px; left:50%; transform:translateX(-50%); }
+    .mist::before{ top:-30px; left:-80px; animation-duration:22s; animation-direction:reverse; }
+    .mist::after{ top:10px; left:80px; animation-duration:26s; opacity:.5; }
+    @keyframes drift{ 0%{transform:translate(-50%,0) rotate(0);opacity:.55}50%{transform:translate(-48%,-8px) rotate(6deg);opacity:.8}100%{transform:translate(-50%,0) rotate(0);opacity:.55}}
+
+    .eightball{
+      position:relative; width:min(68vw,360px); height:min(68vw,360px); border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
+      box-shadow:inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
+      display:grid; place-items:center; overflow:hidden; transition:transform .2s cubic-bezier(.2,.8,.2,1);
+    }
+    .eightball::before{
+      content:""; position:absolute; top:6%; left:12%; width:40%; height:28%;
+      background:radial-gradient(ellipse at top left, rgba(255,255,255,.22), rgba(255,255,255,0));
+      filter:blur(4px); transform:rotate(-12deg); pointer-events:none;
+    }
+    .window{ position:relative; width:50%; height:50%; border-radius:50%;
+      background:radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
+      box-shadow:inset 0 0 40px rgba(0,0,0,.9); display:grid; place-items:center;
+      border:2px solid #0f2a3a; overflow:hidden;
+    }
+    .window::before{ content:""; position:absolute; inset:0; border-radius:50%;
+      background:radial-gradient(circle, transparent 70%, rgba(0,0,0,.7) 100%); pointer-events:none; z-index:1;
+    }
+    .triangle{ position:absolute; left:50%; top:58%; transform:translate(-50%,-50%); width:0; height:0;
+      border-left:calc(var(--triW)/2) solid transparent; border-right:calc(var(--triW)/2) solid transparent;
+      border-top:var(--triH) solid #163a5a; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));
+    }
+    .triangle .msg{
+      position:absolute; left:50%; top:calc(-1 * var(--triH) * 0.72); transform:translateX(-50%);
+      width:calc(var(--triW) * 0.8); text-align:center; font-weight:800; font-size:1.05rem; letter-spacing:.5px;
+      color:#cde7ff; text-shadow:0 1px 0 rgba(0,0,0,.5); line-height:1.2; margin:0 auto;
     }
 
-    .eightball {
-      position: relative;
-      width: min(68vw, 360px);
-      height: min(68vw, 360px);
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 30%, #2b2b2b 0%, #111 55%, #000 100%);
-      box-shadow: inset 0 -20px 40px rgba(0,0,0,.7), 0 30px 60px rgba(0,0,0,.45);
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      transition: transform .2s cubic-bezier(.2,.8,.2,1);
+    /* Ask row */
+    .qa{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:1rem 0 .25rem; }
+    .helper{ color:var(--muted); margin:.25rem 0 .75rem; text-align:center; }
+
+    /* Main reading hero card */
+    .main-card{
+      border:1px solid rgba(51,204,153,.45);
+      background:linear-gradient(180deg, rgba(51,204,153,.08), #0f1312);
+      border-radius:16px;
+      padding:1rem 1rem 1.1rem;
+      box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.02);
+      margin:0 auto 0.75rem;
     }
-    .eightball::before {
-      content: "";
-      position: absolute;
-      top: 6%; left: 12%;
-      width: 40%; height: 28%;
-      background: radial-gradient(ellipse at top left, rgba(255,255,255,.22), rgba(255,255,255,0));
-      filter: blur(4px);
-      transform: rotate(-12deg);
-      pointer-events: none;
+    .main-header{
+      display:flex; align-items:center; gap:.75rem; margin-bottom:.4rem;
     }
-    .window{
-      position: relative; width:50%; height:50%; border-radius:50%;
-      background: radial-gradient(circle at 50% 40%, #0b1b27, #03121c 60%, #01090e 100%);
-      box-shadow: inset 0 0 40px rgba(0,0,0,.9);
-      display:grid; place-items:center; border:2px solid #0f2a3a; overflow:hidden;
+    .main-header{ display:flex; align-items:center; gap:.75rem; margin-bottom:.4rem; }
+    .pill{
+      display:inline-flex; align-items:center; gap:.35rem; font-weight:700; padding:.15rem .6rem; border-radius:999px;
+      background:var(--accent); color:#04110d; font-size:.82rem;
     }
-    .window::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle, transparent 70%, rgba(0,0,0,0.7) 100%);
-      pointer-events: none;
-      z-index: 1;
+    .main-odds{
+      margin-left:auto; font-weight:900; font-size:1.15rem; letter-spacing:.4px;
+    }
+    .main-body{
+      line-height:1.5; font-size:1.02rem; color:#e8e8e8;
+    }
+    .main-odds{ margin-left:auto; font-weight:900; font-size:1.15rem; letter-spacing:.4px; }
+    .main-body{ line-height:1.5; font-size:1.02rem; color:#e8e8e8; }
+
+    /* Scrollable responses */
+    .responses-wrap{ margin-top:.75rem; border:1px solid var(--border); border-radius:14px; background:#121212; max-height:260px; overflow:auto; padding:.5rem; }
+    .responses-grid{ display:grid; grid-template-columns:1fr; gap:.5rem; }
+    @media(min-width:680px){ .responses-grid{ grid-template-columns:1fr 1fr; } }
+
+    .persona-card{
+      position:relative; border:1px solid var(--border); border-radius:12px; padding:.85rem .95rem .9rem;
+      background:linear-gradient(180deg, #141414, #0f0f0f);
+      transition:transform .06s ease, box-shadow .15s ease, border-color .15s ease;
+      cursor:pointer;
+    }
+    .persona-card:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(0,0,0,.25); }
+    .persona-card h4{ margin:0 0 .35rem; font-size:.95rem; letter-spacing:.4px; display:flex; align-items:center; gap:.5rem; }
+    .persona-card .pill{ background:var(--accent); color:#04110d; }
+    .persona-card .odds{ font-weight:700; margin:.35rem 0 .4rem; }
+    .persona-card p{ margin:0; color:#e3e3e3; line-height:1.45; white-space:pre-wrap; }
+
+    /* Persona colorways */
+    .card--bold{ background:linear-gradient(180deg, rgba(45,212,191,.10), #0e1716); border-color:rgba(45,212,191,.35); }
+    .card--bold h4{ color:var(--bold); }
+    .card--bold .pill{ background:var(--bold); color:var(--bold-ink); }
+
+    .card--caut{ background:linear-gradient(180deg, rgba(242,201,76,.10), #19160a); border-color:rgba(242,201,76,.35); }
+    .card--caut h4{ color:var(--caut); }
+    .card--caut .pill{ background:var(--caut); color:var(--caut-ink); }
+
+    .card--neut{ background:linear-gradient(180deg, rgba(122,160,180,.12), #0f1417); border-color:rgba(122,160,180,.35); }
+    .card--neut h4{ color:var(--neut); }
+    .card--neut .pill{ background:var(--neut); color:var(--neut-ink); }
+
+    .card--myst{ background:linear-gradient(180deg, rgba(167,139,250,.12), #130f19); border-color:rgba(167,139,250,.35); }
+    .card--myst h4{ color:var(--myst); }
+    .card--myst .pill{ background:var(--myst); color:var(--myst-ink); }
+
+    /* Skeleton state */
+    .skeleton{ position:relative; overflow:hidden; }
+    .skeleton .line{ height:12px; background:#1b1b1b; border-radius:6px; margin:.4rem 0; }
+    .skeleton .line.wide{ width:92%; } .skeleton .line.med{ width:75%; } .skeleton .line.short{ width:55%; }
+    .skeleton::after{
+      content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+      animation:shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{ 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
+
+    input[type="email"], input[type="text"]{
+      padding:.85rem .9rem; border:none; border-radius:10px; min-width:280px; background:#1a1a1a; color:#fff; outline:1px solid var(--border);
+    }
+    button{
+      padding:.9rem 1.2rem; border:none; border-radius:12px; background:var(--accent); color:#02120d; font-weight:700; cursor:pointer;
+      transition:background .15s ease, transform .08s ease, box-shadow .15s ease; box-shadow:0 8px 18px rgba(51,204,153,.25);
+    }
+    button:hover{ background:var(--accent-hover); }
+    button:active{ transform:translateY(1px); }
+
+    /* Signup centered */
+    .signup{
+      display:flex; justify-content:center; align-items:center; gap:.6rem;
+      margin:1.25rem auto 0; width:min(92vw,720px);
     }
 
-    .triangle {
-      position: absolute;
-      left: 50%;
-      top: 58%;
-      transform: translate(-50%, -50%);
-      width: 0; height: 0;
-      border-left: calc(var(--triW) / 2) solid transparent;
-      border-right: calc(var(--triW) / 2) solid transparent;
-      border-top: var(--triH) solid #163a5a;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.6));
-    }
-    .triangle .msg {
-      position: absolute;
-      left: 50%;
-      top: calc(-1 * var(--triH) * 0.72);
-      transform: translateX(-50%);
-      width: calc(var(--triW) * 0.8);
-      text-align: center;
-      font-weight: 800;
-      font-size: 1.05rem;
-      letter-spacing: 0.5px;
-      color: #cde7ff;
-      text-shadow: 0 1px 0 rgba(0,0,0,.5);
-      line-height: 1.2;
-      margin: 0 auto;
-    }
-
-    .qa {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 1rem 0 0.25rem;
-    }
-    .helper { color: var(--muted); margin: 0.25rem 0 0.75rem; text-align: center; }
-
-    .readout { text-align: center; margin: 0.5rem 0 0; line-height: 1.45; }
-
-    /* NEW: Scrollable responses area */
-    /* Scrollable responses area */
-    .responses-wrap {
-      margin-top: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #121212;
-      max-height: 260px;     /* controls visible height */
-      overflow: auto;        /* scroll when content grows */
-      max-height: 260px;
-      overflow: auto;
-      padding: 0.5rem;
-    }
-    .responses-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.5rem;
-    }
-    @media (min-width: 680px){
-      .responses-grid { grid-template-columns: 1fr 1fr; }
-    }
-    .persona-card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.75rem 0.9rem;
-      background: linear-gradient(180deg, #131313, #0f0f0f);
-    }
-    .persona-card h4 {
-      margin: 0 0 0.35rem;
-      font-size: 0.95rem;
-      color: var(--accent);
-      letter-spacing: 0.4px;
-    }
-    .persona-card .odds {
-      font-weight: 700;
-      margin-bottom: 0.35rem;
-    }
-    .persona-card p {
-      margin: 0;
-      color: #e3e3e3;
-      line-height: 1.45;
-      white-space: pre-wrap;
-    }
-
-    .signup {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 0 1rem;
-      margin: 1rem auto 0;
-    }
-    input[type="email"], input[type="text"] {
-      padding: 0.85rem 0.9rem;
-      border: none;
-      border-radius: 10px;
-      min-width: 280px;
-      background: #1a1a1a;
-      color: var(--fg);
-      outline: 1px solid var(--border);
-    }
-    button {
-      padding: 0.9rem 1.2rem;
-      border: none;
-      border-radius: 12px;
-      background: var(--accent);
-      color: #02120d;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
-      box-shadow: 0 8px 18px rgba(51,204,153,.25);
-    }
-    button:hover { background: var(--accent-hover); }
-    button:active { transform: translateY(1px); }
-
-    footer {
-      margin: 1.25rem 0 1.5rem;
-      text-align: center;
-      color: #8a8a8a;
-      font-size: 0.95rem;
-    }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
+    footer{ margin:1.25rem 0 1.5rem; text-align:center; color:#8a8a8a; font-size:.95rem; }
+    a{ color:var(--accent); text-decoration:none; } a:hover{ text-decoration:underline; }
     .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-    @keyframes wobble {
-      0%{ transform: rotate(0deg) translateX(0); }
-      20%{ transform: rotate(3deg) translateX(6px); }
-      40%{ transform: rotate(-3deg) translateX(-6px); }
-      60%{ transform: rotate(2deg) translateX(4px); }
-      80%{ transform: rotate(-2deg) translateX(-4px); }
-      100%{ transform: rotate(0deg) translateX(0); }
+    @keyframes wobble{
+      0%{transform:rotate(0) translateX(0)}20%{transform:rotate(3deg) translateX(6px)}
+      40%{transform:rotate(-3deg) translateX(-6px)}60%{transform:rotate(2deg) translateX(4px)}
+      80%{transform:rotate(-2deg) translateX(-4px)}100%{transform:rotate(0) translateX(0)}
     }
-    .shake { animation: wobble .6s ease-in-out; }
+    .shake{ animation:wobble .6s ease-in-out; }
 
     .window::after{
-      content:"";
-      position:absolute;
-      inset:-99%;
-      opacity: 0.05; 
+      content:""; position:absolute; inset:-99%; opacity:.05;
       background:
         radial-gradient(120px 120px at 30% 40%, rgba(100,180,255,.12), transparent 60%),
-        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.10), transparent 60%),
+        radial-gradient(160px 160px at 70% 70%, rgba(51,204,153,.20), transparent 60%),
         radial-gradient(200px 200px at 50% 30%, rgba(255,255,255,.06), transparent 65%);
-      filter: blur(18px) saturate(1.05);
-      mix-blend-mode: screen;
-      animation: swirl 22s ease-in-out infinite;
-      pointer-events:none;
-      border-radius: 50%;
-      clip-path: circle(50% at 50% 50%);
+      filter:blur(18px) saturate(1.05); mix-blend-mode:screen; animation:swirl 22s ease-in-out infinite; pointer-events:none; border-radius:50%;
+      clip-path:circle(50% at 50% 50%);
     }
     .triangle::after{
-      content:"";
-      position:absolute;
-      left:50%; top:calc(-1 * var(--triH));
-      transform: translateX(-50%);
-      width: var(--triW); height: var(--triH);
-      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      content:""; position:absolute; left:50%; top:calc(-1 * var(--triH)); transform:translateX(-50%);
+      width:var(--triW); height:var(--triH); clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
       background:
         radial-gradient(200px 200px at 65% 60%, rgba(180,220,255,.20), transparent 40%),
         radial-gradient(200px 200px at 65% 75%, rgba(51,204,153,.20), transparent 40%);
-      filter: blur(10px);
-      mix-blend-mode: screen;
-      opacity:.7;
-      animation: swirl 18s ease-in-out infinite reverse;
-      pointer-events:none;
+      filter:blur(10px); mix-blend-mode:screen; opacity:.7; animation:swirl 18s ease-in-out infinite reverse; pointer-events:none;
     }
-    @keyframes swirl{
-      0%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
-      50%{ transform: translateX(-50%) rotate(5deg); opacity:.85; }
-      100%{ transform: translateX(-50%) rotate(0deg); opacity:.6; }
-    }
+    @keyframes swirl{ 0%{transform:translateX(-50%) rotate(0);opacity:.6}50%{transform:translateX(-50%) rotate(5deg);opacity:.85}100%{transform:translateX(-50%) rotate(0);opacity:.6} }
 
-    /* NEW: outcome border tints (optional) */
-    .demo.tint-good   { border-color: #2ea86b; }
-    .demo.tint-mixed  { border-color: #bda32e; }
-    .demo.tint-risky  { border-color: #c24d4d; }
+    /* outcome border tints */
+    .demo.tint-good{ border-color:#2ea86b; }
+    .demo.tint-mixed{ border-color:#bda32e; }
+    .demo.tint-risky{ border-color:#c24d4d; }
+
+    .regen-hint{ font-size:.78rem; color:var(--muted); margin-top:.35rem; }
   </style>
 </head>
 <body>
   <!-- HERO -->
   <section class="hero" aria-label="AIght Ball">
-    <img src="Images/Logo.jpg" alt="AIght Ball logo" />
+    <img src="Images/Logo.jpg" alt="AIght Ball logo"/>
   </section>
 
   <!-- DEMO -->
-  <section class="demo" role="region" aria-label="AIght Ball demo">
   <section id="demo" class="demo" role="region" aria-label="AIght Ball demo">
     <div class="oracle-wrap">
       <div class="mist"></div>
@@ -324,38 +227,42 @@
     </div>
 
     <form id="question-form" class="qa" autocomplete="off">
-      <label class="sr-only" for="user-question">Ask a yes/no question</label>
-      <input id="user-question" type="text" name="question" placeholder="Ask a yes/no question…" maxlength="140" />
-      <button type="submit" aria-label="Ask the AIght Ball">Ask</button>
+      <label class="sr-only" for="user-question">Ask a question</label>
+      <input id="user-question" type="text" name="question" placeholder="Ask anything—decisions, dilemmas, ideas…" maxlength="200"/>
+      <button type="submit" aria-label="Ask AIght Ball">Ask</button>
       <button type="button" id="shake-btn" aria-label="Shake the ball">Shake It</button>
     </form>
     <p class="helper">Tip: press Enter to ask. Or just shake for a random reading.</p>
 
-    <p id="demo-odds" class="readout">🎲 Odds: --%</p>
-    <p id="demo-text" class="readout">✨ Waiting for your question…</p>
+    <!-- Prominent main reading -->
+    <div id="main-card" class="main-card" role="status" aria-live="polite">
+      <div class="main-header">
+        <span class="pill pill--primary">AIght Ball</span>
+        <div id="demo-odds" class="main-odds">🎲 Odds: --%</div>
+      </div>
+      <div id="demo-text" class="main-body">✨ Waiting for your question…</div>
+    </div>
 
-    <!-- NEW: Scrollable multi-persona responses -->
     <!-- Scrollable multi-persona responses -->
     <div class="responses-wrap" aria-live="polite">
-      <div id="responses" class="responses-grid">
-        <!-- persona cards inject here -->
-      </div>
+      <div id="responses" class="responses-grid"></div>
     </div>
   </section>
 
-  <!-- Signup -->
+  <!-- Signup (centered) -->
   <form class="signup" name="signup" method="POST" data-netlify="true">
-    <input type="email" name="email" placeholder="Enter your email for early access" required />
+    <input type="email" name="email" placeholder="Enter your email for early access" required/>
     <button type="submit">Notify Me</button>
   </form>
 
   <footer>
-    © 2025 AIght Ball · Follow us on 
+    © 2025 AIght Ball · Follow us on
     <a href="https://instagram.com/aightball.io" target="_blank" rel="noopener">Instagram</a> &
     <a href="https://youtube.com/@aightballio" target="_blank" rel="noopener">YouTube</a>
   </footer>
 
 <script>
+  /* ================== DOM HOOKS ================== */
   const orb = document.getElementById('orb');
   const orbMsg = document.getElementById('orb-msg');
   const oddsOut = document.getElementById('demo-odds');
@@ -364,166 +271,128 @@
   const askBtn = document.querySelector('#question-form button[type="submit"]');
   const shakeBtn = document.getElementById('shake-btn');
   const responsesEl = document.getElementById('responses');
-  const demoWrap = document.getElementById('demo'); // NEW
+  const demoWrap = document.getElementById('demo');
 
-  const personas = [
-    { id: 'bold',    label: 'Bold' },
-    { id: 'cautious',label: 'Cautious' },
-    { id: 'neutral', label: 'Neutral / Practical' },
-    { id: 'mystic',  label: 'Mystic' }
+  /* ================== PERSONAS ================== */
+  /* ================== PERSONAS (stance + style) ================== */
+  const PERSONAS = [
+    {
+      id:'bold', label:'Bold', color:'var(--bold)',
+      priorities:['action','momentum','clarity'],
+      avoids:['hedging','over-qualifying'],
+      voice:'Confident, vivid, concise. Short sentences when urging action.',
+      heuristics:'>60% = decisive next step; 40–60% = small experiment with tight scope; <40% = defer or shrink task.',
+    },
+    {
+      id:'cautious', label:'Cautious', color:'var(--caut)',
+      priorities:['risk control','containment','timing'],
+      avoids:['grand plans','overexposure'],
+      voice:'Measured, calm, and supportive. Encourages containment and timing.',
+      heuristics:'>60% = bounded move with pre-set limits; 40–60% = triage and plan; <40% = pause and protect energy.',
+    },
+    {
+      id:'neutral', label:'Neutral / Practical', color:'var(--neut)',
+      priorities:['clarity','order','incremental progress'],
+      avoids:['drama','fluff'],
+      voice:'Grounded and pragmatic, “what moves the needle?” tone.',
+      heuristics:'>60% = pick the most practical lever; 40–60% = organize and schedule; <40% = leave breadcrumbs for future self.',
+    },
+    {
+      id:'mystic', label:'Mystic', color:'var(--myst)',
+      priorities:['intuition','timing','lightness'],
+      avoids:['forcing outcomes','overthinking'],
+      voice:'Gentle, poetic hints; emphasizes tides, synchronicity, and stopping one step early.',
+      heuristics:'>60% = follow the “green light” and end early; 40–60% = send a light signal and wait; <40% = rest and let clarity arrive.',
+    },
+    { id:'bold',     label:'Bold',     color:'var(--bold)',  stance:'advocate', lexicon:['ship','push','cut','send','state','move'], bans:['maybe','perhaps','consider'], minLen:50, maxLen:110 },
+    { id:'cautious', label:'Cautious', color:'var(--caut)',  stance:'contain',  lexicon:['cap','limit','stage','buffer','guard','delay'], bans:['slam','all-in'], minLen:70, maxLen:140 },
+    { id:'neutral',  label:'Neutral / Practical', color:'var(--neut)', stance:'optimize', lexicon:['sort','log','batch','scope','schedule','track'], bans:['vibes','destiny'], minLen:60, maxLen:120 },
+    { id:'mystic',   label:'Mystic',  color:'var(--myst)',  stance:'timing',   lexicon:['tide','hush','glimmer','signal','quiet','align'], bans:['KPI','OKR'], minLen:60, maxLen:130 },
   ];
 
-  function shakeOrb() {
-    orb.classList.remove('shake');
-    void orb.offsetWidth;
-    orb.classList.add('shake');
+  /* ================== UTILITIES ================== */
+  function shakeOrb(){
+    orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake');
+  }
+  function shakeOrb(){ orb.classList.remove('shake'); void orb.offsetWidth; orb.classList.add('shake'); }
+  function clamp(n,a=0,b=1){ return Math.min(b, Math.max(a,n)); }
+  function randFrom(arr, seed){ return arr[Math.abs(seed)%arr.length]; }
+  function seededHash(str){
+    let h=2166136261>>>0;
+    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+    return h>>>0;
+  }
+  function nowBucket(minutes=60){ return Math.floor(Date.now()/1000/60/minutes); }
+
+  function renderPersonaSkeletons(){
+    responsesEl.innerHTML = '';
+    PERSONAS.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = `persona-card skeleton ${cardClass(p.id)}`;
+      card.innerHTML = `
+        <h4><span class="pill">${p.label}</span></h4>
+        <div class="line wide"></div>
+        <div class="line med"></div>
+        <div class="line short"></div>
+        <div class="regen-hint">Generating…</div>
+      `;
+      responsesEl.appendChild(card);
+    });
   }
 
-  function setLoading(on) {
-    askBtn.disabled = on;
-    shakeBtn.disabled = on;
-    if (on) {
+  function setLoading(on){
+    askBtn.disabled = on; shakeBtn.disabled = on;
+    if(on){
       orbMsg.textContent = "…";
       oddsOut.textContent = "🎲 Odds: —";
       textOut.textContent = "✨ Consulting the orb…";
-      // clear persona cards placeholder
       renderPersonaSkeletons();
     }
   }
 
-  function fallback() {
-    return {
-      short: "62%",
-      long: "Currents are moving in your favor, but attention to small details will preserve the edge.",
-      odds: 62
-    };
-  }
-
-  // NEW: tiny “tone wrapper” for safe fallback if API ignores persona
-  // legacy persona wrapper (kept; unused by new flow but safe to keep)
-  function wrapByPersona(baseLong, personaId, question){
-    const q = (question || '').toLowerCase();
-    const tag =
-      personaId === 'bold'    ? "Play it strong: " :
-      personaId === 'cautious'? "Proceed, but hedge: " :
-      personaId === 'neutral' ? "Practical take: " :
-      /* mystic */              "The currents whisper: ";
-
-    // a couple micro-specifics to vary endings without needing backend changes
-                                "The currents whisper: ";
-    let finisher = " Keep your energy and boundaries clear.";
-    if (q.includes('dinner') || q.includes('food') || q.includes('eat')){
-      finisher = " Try one concrete step tonight (pick a dish, set a time, go).";
-    } else if (q.includes('relationship') || q.includes('date') || q.includes('partner')){
-      finisher = " Name a need, ask a question, and give space for a real answer.";
-    } else if (q.includes('job') || q.includes('career') || q.includes('work')){
-      finisher = " Make one measurable move in the next 48 hours.";
-    }
-    return tag + baseLong.replace(/\s+$/,'') + finisher;
-  }
-
-  function createCard({label, odds, long}) {
+  function createCard({persona, label, odds, long, onClick}){
     const div = document.createElement('div');
-    div.className = 'persona-card';
+    div.className = `persona-card ${cardClass(persona)}`;
     div.innerHTML = `
-      <h4>${label}</h4>
+      <h4><span class="pill">${label}</span></h4>
       <div class="odds">Odds: ${Number.isFinite(odds) ? odds + '%' : '--'}</div>
       <p>${long}</p>
+      <div class="regen-hint">Tap to regenerate this voice</div>
     `;
+    div.addEventListener('click', onClick);
     return div;
   }
+  function cardClass(id){ return id==='bold' ? 'card--bold' : id==='cautious' ? 'card--caut' : id==='neutral' ? 'card--neut' : 'card--myst'; }
 
-  function renderPersonaSkeletons(){
-    responsesEl.innerHTML = '';
-    personas.forEach(p=>{
-      const skeleton = document.createElement('div');
-      skeleton.className = 'persona-card';
-      skeleton.innerHTML = `
-        <h4>${p.label}</h4>
-        <div class="odds">Odds: …</div>
-        <p>Thinking…</p>
-      `;
-      responsesEl.appendChild(skeleton);
-    });
+  function cardClass(id){
+    return id==='bold' ? 'card--bold' :
+           id==='cautious' ? 'card--caut' :
+           id==='neutral' ? 'card--neut' : 'card--myst';
   }
 
-  async function fetchReading(question, personaId){
-    // Try persona-aware first. If backend ignores 'persona', we still get a normal reading.
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    try{
-      const resp = await fetch("/api/reading", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(personaId ? { question, persona: personaId } : { question }),
-        signal: controller.signal
-      });
-      const data = await resp.json().catch(()=>null);
-      return data || null;
-    } catch(e){
-      return null;
-    } finally {
-      clearTimeout(timer);
-    }
+  function fallback(){
+    return { short:"62%", long:"A proactive move is likely to pay off, provided you keep scope contained.", odds:62 };
   }
-
-  /* -------- NEW HELPERS: split % to personas + persona voice + border tint -------- */
-
-  function clamp(n, a=0, b=1){ return Math.min(b, Math.max(a, n)); }
+  function fallback(){ return { short:"62%", long:"A proactive move is likely to pay off, provided you keep scope contained.", odds:62 }; }
 
   // Turn a single 0–100 positive odds into 4 persona buckets summing to 100
+  // 0–100 odds → 4 persona shares
   function splitPersonaShares(posOdds){
-    const p = clamp(posOdds/100);          // 0..1
-    const amb = 1 - Math.abs(p - 0.5)*2;   // 1 at 50/50, 0 at extremes
-    let wBold    = 0.55*p + 0.10*amb;
-    let wCaut    = 0.55*(1-p) + 0.10*amb;
+    const p = clamp(posOdds/100);
+    const amb = 1 - Math.abs(p - 0.5)*2; // ambiguity high near 50/50
+    const amb = 1 - Math.abs(p - 0.5)*2;
+    let wBold = 0.55*p + 0.10*amb;
+    let wCaut = 0.55*(1-p) + 0.10*amb;
     let wNeutral = 0.80*amb;
-    let wMystic  = Math.max(0, 1 - (wBold+wCaut+wNeutral));
-
-    const S = wBold + wCaut + wNeutral + wMystic || 1;
-    let arr = [wBold/S, wCaut/S, wNeutral/S, wMystic/S].map(x => Math.round(x*100));
+    let wMystic = Math.max(0, 1 - (wBold+wCaut+wNeutral));
+    const S = wBold+wCaut+wNeutral+wMystic || 1;
+    let arr = [wBold/S, wCaut/S, wNeutral/S, wMystic/S].map(x=>Math.round(x*100));
     let diff = 100 - arr.reduce((a,b)=>a+b,0);
-    while (diff !== 0){
-      const idx = diff > 0 ? arr.indexOf(Math.max(...arr)) : arr.indexOf(Math.min(...arr));
-      arr[idx] += diff > 0 ? 1 : -1;
-      diff = 100 - arr.reduce((a,b)=>a+b,0);
+    while(diff!==0){
+      const idx = diff>0 ? arr.indexOf(Math.max(...arr)) : arr.indexOf(Math.min(...arr));
+      arr[idx] += diff>0 ? 1 : -1; diff = 100 - arr.reduce((a,b)=>a+b,0);
     }
-    return { bold: arr[0], cautious: arr[1], neutral: arr[2], mystic: arr[3] };
-  }
-
-  function personaWrite(personaId, posOdds, question){
-    const q = (question||'').toLowerCase();
-    const tip =
-      q.includes('dinner')||q.includes('food')||q.includes('eat') ? " Pick a dish and time—commit." :
-      (q.includes('relationship')||q.includes('date')||q.includes('partner')) ? " Say one need aloud and invite an honest reply." :
-      (q.includes('job')||q.includes('career')||q.includes('work')) ? " Make one measurable move inside 48 hours." :
-      " Keep your energy and boundaries clear.";
-    const p = posOdds;
-    const positive = p >= 60;
-    const negative = p <= 40;
-
-    const voices = {
-      bold:     { pos:"Green lights. Act now, don’t over-optimize—ship it.",
-                  neg:"Odds are rough. If you go, go loud—own the risk and the outcome.",
-                  mid:"Momentum is there if you create it—choose a line and punch through." },
-      cautious: { pos:"Good signs, but protect the downside—set limits and a stop-loss.",
-                  neg:"This reads red. Pause, gather facts, and re-attempt with safeguards.",
-                  mid:"Mixed read. Test small, observe, then scale or stand down." },
-      neutral:  { pos:"Favorable, with practical upside—write the next two steps.",
-                  neg:"Not favorable—what must be true to proceed? If you can’t meet it, pass.",
-                  mid:"Fifty-fifty—define success criteria and a clear no-go line." },
-      mystic:   { pos:"The current lifts you—follow the quiet ‘yes’ and keep your grip light.",
-                  neg:"Turbid waters—sit still until the silt settles; the path will show.",
-                  mid:"Two tides meet here—listen for the smaller signal underneath the noise." }
-    };
-
-    const bundle = voices[personaId];
-    const line = positive ? bundle.pos : negative ? bundle.neg : bundle.mid;
-    const tag =
-      personaId==='bold'    ? "Bold — " :
-      personaId==='cautious'? "Cautious — " :
-      personaId==='neutral' ? "Practical — " : "Mystic — ";
-    return tag + line + tip;
+    return { bold:arr[0], cautious:arr[1], neutral:arr[2], mystic:arr[3] };
   }
 
   function tintBorder(posOdds){
@@ -533,102 +402,517 @@
     else demoWrap.classList.add('tint-mixed');
   }
 
-  /* ---------------------------- MAIN ACTION ---------------------------- */
+  /* =============== Topic & Lead line =============== */
+  /* =============== Topic & Seed extraction =============== */
+  function detectTopic(q){
+    const s = (q||'').toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
+    if (has('email','inbox','reply','work','monday','case','meeting','deck','presentation')) return 'work';
+    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen')) return 'food';
+    if (has('relationship','date','partner','spouse','family','friend','text them','call')) return 'relationship';
+    if (has('gym','run','workout','health','sleep','hydrate','walk','yoga')) return 'health';
+    if (has('money','budget','buy','sell','invest','crypto','stock','cost','price')) return 'money';
+    const s=(q||'').toLowerCase(); const has=(...w)=>w.some(x=>s.includes(x));
+    if (has('email','inbox','reply','work','monday','case','meeting','deck','presentation','boss','manager')) return 'work';
+    if (has('dinner','eat','meal','food','cook','restaurant','matcha','ramen','lunch')) return 'food';
+    if (has('relationship','date','partner','spouse','family','friend','text','call','break up')) return 'relationship';
+    if (has('gym','run','workout','health','sleep','hydrate','walk','yoga','sick','doctor')) return 'health';
+    if (has('money','budget','buy','sell','invest','crypto','stock','cost','price','salary')) return 'money';
+    if (has('video','stream','write','script','record','edit','channel','shorts','lofi','song')) return 'creative';
+    if (has('trip','travel','flight','hotel','book','drive','commute')) return 'travel';
+    if (has('party','hang','friends','event','invite')) return 'social';
+    return 'general';
+  }
 
-  async function askAightBall(question) {
+  function extractSeed(question, topic){
+    const s=(question||'').toLowerCase();
+    const actors = ['you'];
+    if (s.includes('boss')||s.includes('manager')) actors.push('boss');
+    if (s.includes('partner')||s.includes('spouse')) actors.push('partner');
+
+    const artifactsByTopic = {
+      work:['Slack DM','email draft','ticket','calendar block','deck slide'],
+      food:['pan','bowl','order ticket','recipe note'],
+      relationship:['text message','voice note','coffee invite'],
+      health:['timer','water bottle','vitamin packet','doctor note'],
+      money:['budget line','cart','limit note'],
+      creative:['script stub','thumbnail','draft file'],
+      travel:['booking tab','packing list','route card'],
+      social:['invite','group chat','playlist'],
+      general:['note','list','tab','timer']
+    };
+    const windowsByTopic = {
+      work:['this afternoon','tomorrow morning','by EOD','by lunch'],
+      food:['tonight','this evening','lunchtime'],
+      relationship:['tonight','tomorrow','this weekend'],
+      health:['tonight','tomorrow morning'],
+      money:['today','this week'],
+      creative:['tonight','tomorrow'],
+      travel:['this week','before noon'],
+      social:['tonight','this weekend'],
+      general:['today','tomorrow']
+    };
+    const stakesByTopic = {
+      work:'progress vs. visibility',
+      food:'taste vs. effort',
+      relationship:'honesty vs. harmony',
+      health:'rest vs. momentum',
+      money:'cost vs. value',
+      creative:'shipping vs. polish',
+      travel:'certainty vs. options',
+      social:'connection vs. energy',
+      general:'effort vs. payoff'
+    };
+
+    const seed = {
+      actors, 
+      artifact: randFrom(artifactsByTopic[topic], seededHash(question+nowBucket())),
+      window: randFrom(windowsByTopic[topic], seededHash('w'+question+nowBucket())),
+      stakes: stakesByTopic[topic] || 'effort vs. payoff'
+    };
+    return seed;
+  }
+
+  function pickTimebox(odds){
+    if (odds >= 75) return '45 minutes';
+    if (odds >= 55) return '25 minutes';
+    if (odds >= 35) return '15 minutes';
+    return '10 minutes';
+  }
+
+  function pickArchetype(odds){
+    if (odds >= 75) return 'green_light';
+    if (odds >= 55) return 'momentum';
+    if (odds > 44)  return 'forked';
+    if (odds > 29)  return 'headwind';
+    return 'not_tonight';
+  }
+
+  function overallRuling(odds, topic){
+    const p = Number(odds)||50;
+    const lead = p>=70 ? 'A strong tailwind favors action.'
+      : p>=55 ? 'Momentum leans your way if you keep scope tight.'
+      : p>45 ? 'It could go either way—small bets beat grand plans.'
+      : p>30 ? 'Headwinds ahead; progress is possible with guardrails.'
+      : 'Tonight likely isn’t the move—protect energy and set a clean start.';
+    const garnish = ({
+      work:' Aim for visible progress, not inbox zero.',
+      food:' Decide once, plate simply, and enjoy it.',
+      relationship:' Lead with one clear ask or appreciation.',
+      health:' Choose a gentle win over a heroic push.',
+      money:' Decide the limit first, then act—or wait.',
+      creative:' Ship a sketch, not a symphony.',
+      travel:' Lock one decision and close the tab.',
+      social:' Set a vibe and a boundary.',
+      general:''
+    })[topic] || '';
+    return `${lead}${garnish}`;
+  }
+
+  /* ============ BACKEND BRIDGE (enhanced) ============ */
+  function buildPersonaPrompt(question, odds, topic, persona){
+  function buildPersonaPrompt(question, odds, topic, persona, seed, archetype, knobs){
+    return {
+      mode: 'persona_narrative_v1',
+      instruction: 'Write a distinct 4–6 sentence micro-story outcome for this question. Use the persona’s heuristics and voice; do not write generic advice. Start concrete, end with a crisp stop. Avoid repeating stock phrases.',
+      question, odds, topic,
+      persona: {
+        id: persona.id, label: persona.label,
+        priorities: persona.priorities, avoids: persona.avoids,
+        voice: persona.voice, heuristics: persona.heuristics
+      mode: 'persona_narrative_v2',
+      instruction: 'Write a distinct 4–6 sentence micro-story outcome in this shared world. Use persona stance and style; avoid generic advice. Start concrete; end with a crisp marker.',
+      question, odds, topic, seed, archetype, persona: {
+        id: persona.id, label: persona.label, stance: persona.stance,
+      },
+      guidance: {
+        timebox: pickTimebox(odds),
+        lexicon: persona.lexicon,
+        bans: persona.bans,
+        knobs,
+        must_avoid: ['“consider energy and boundaries”','boilerplate hedges','lists'],
+        style: 'concise, image-light, specific next step if appropriate'
+        style: 'concise, image-light, specific artifact'
+      }
+    };
+  }
+
+  async function fetchReading(payload){
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 20000);
+    try{
+      const resp = await fetch("/api/reading", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      const data = await resp.json().catch(()=>null);
+      return data || null;
+    }catch(e){
+      return null;
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
+  async function fetchBase(question){
+    return await fetchReading({ question });
+  async function fetchBase(question, seed, archetype){
+    // If your API returns main/personas, great. If not, we synthesize locally.
+    return await fetchReading({ question, seed, archetype });
+  }
+
+  async function fetchPersonaNarrative(question, odds, topic, persona){
+    const controls = buildPersonaPrompt(question, odds, topic, persona);
+  async function fetchPersonaNarrative(question, odds, topic, persona, seed, archetype, knobs){
+    const controls = buildPersonaPrompt(question, odds, topic, persona, seed, archetype, knobs);
+    const res = await fetchReading({ question, persona: persona.id, controls });
+    const txt = typeof res?.narrative === 'string' && res.narrative.trim()
+      ? res.narrative.trim()
+      : (typeof res?.long === 'string' && res.long.trim() ? res.long.trim() : null);
+    return txt;
+  }
+
+  /* ============ CLIENT-SIDE SYNTH (fallback only) ============ */
+  function synthesizeNarrative(personaId, odds, topic){
+  /* ============ MAIN NARRATIVE TEMPLATES ============ */
+  function composeMainBeats(question, odds, topic, seed, archetype){
+    const tb = pickTimebox(odds);
+    const p = Number(odds)||50;
+    const positive = p >= 60, negative = p <= 40;
+    const seed = {
+      bold: {
+        pos: [`You move first and let momentum do the heavy lifting. In ${tb}, you notch a visible win and stop before the slope turns sticky.`],
+        mid: [`You pick one lever and pull it clean. Small, sharp progress in ${tb} beats a fuzzy plan.`],
+        neg: [`You try once, then protect the evening. The win tonight is discipline, not volume.`]
+      },
+      cautious: {
+        pos: [`You fence the task and keep it tidy. ${tb} of focused effort, pre-capped risk, and a clean stop.`],
+        mid: [`You triage, schedule, and leave the heavy lift for a clearer head. Order first, execution later.`],
+        neg: [`You pause without guilt. Fires-only scan, then rest buys you better odds tomorrow.`]
+      },
+      neutral: {
+        pos: [`You choose the most practical move in ${tb} and remove one snag. Clarity compounds.`],
+        mid: [`You organize the board so the next step is obvious. The map matters more than mileage tonight.`],
+        neg: [`You leave breadcrumbs for morning-you and close the tab. Progress is prevention.`]
+      },
+      mystic: {
+        pos: [`A green light appears—you follow it lightly, then stop a step early. Leaving a spark invites it back.`],
+        mid: [`You send a gentle signal and listen. The right path answers when the noise fades.`],
+        neg: [`Your gut says “not yet.” You honor it. Sleep is a collaborator.`]
+    const act = odds >= 50; // default main direction
+    const you = 'You';
+    const art = seed.artifact;
+    const win = seed.window;
+    const marker = topic==='work' ? 'a visible change in your board'
+                 : topic==='relationship' ? 'a reply with real tone'
+                 : topic==='food' ? 'a simple plate and a clean sink'
+                 : topic==='creative' ? 'a draft you can ship'
+                 : topic==='money' ? 'a number you won’t cross'
+                 : topic==='health' ? 'better energy on wake'
+                 : topic==='travel' ? 'one booking and fewer tabs'
+                 : 'a small, obvious next step';
+
+    const beatsByArch = {
+      green_light: act ? [
+        `${you} frame the situation in one line and open the ${art}.`,
+        `You act now, using ${tb} to push the part that moves first.`,
+        `Momentum arrives—scope stays tidy, and friction drops.`,
+        `By ${win}, ${marker}.`
+      ] : [
+        `${you} name the pull, then pocket the ${art}.`,
+        `You hold for ${tb} and line up a cleaner run.`,
+        `Noise fades; the path clarifies without bleeding time.`,
+        `By ${win}, ${marker}.`
+      ],
+      momentum: act ? [
+        `${you} restate the ask and open the ${art}.`,
+        `You take a bounded swing—${tb}, one slice only.`,
+        `A quick proof lands; the rest can wait.`,
+        `By ${win}, ${marker}.`
+      ] : [
+        `${you} capture the ask into the ${art} and set a timer.`,
+        `You delay the move and remove one blocker instead.`,
+        `Clutter drops; odds improve.`,
+        `By ${win}, ${marker}.`
+      ],
+      forked: [
+        `${you} reduce the tangle to two paths in the ${art}.`,
+        `You run a tiny bet for ${tb} and watch the signal.`,
+        `If it warms, you scale; if not, you exit clean.`,
+        `By ${win}, ${marker}.`
+      ],
+      headwind: [
+        `${you} name the risk and park it in the ${art}.`,
+        `You avoid exposure, triage the top snag, and stop.`,
+        `Tomorrow’s setup improves without spinning wheels.`,
+        `By ${win}, ${marker}.`
+      ],
+      not_tonight: [
+        `${you} decline the big move and close the ${art}.`,
+        `You pick an alternative micro-win and protect the evening.`,
+        `Fatigue drops; clarity returns.`,
+        `By ${win}, ${marker}.`
+      ]
+    };
+
+    let beats = beatsByArch[archetype] || beatsByArch.momentum;
+    // Ensure 4–5 sentences
+    if (beats.length<4) beats.push(`By ${win}, ${marker}.`);
+    return beats;
+  }
+
+  /* ======== PERSONA SYNTH (diversity + opposition) ======== */
+  const ARTIFACT_POOLS = {
+    work:['Slack DM','email draft','ticket','calendar block','deck slide'],
+    relationship:['text message','voice note','coffee invite','note'],
+    food:['pan','bowl','order ticket','recipe note'],
+    health:['timer','water bottle','doctor note','walk route'],
+    money:['budget line','cart','limit note','transfer'],
+    creative:['script stub','thumbnail','draft file','outline'],
+    travel:['booking tab','packing list','route card','note'],
+    social:['invite','group chat','playlist','note'],
+    general:['note','list','tab','timer']
+  };
+
+  function distinctArtifacts(topic){
+    const pool = [...ARTIFACT_POOLS[topic]||ARTIFACT_POOLS.general];
+    // rotate for uniqueness
+    return (idx)=> pool[(idx)%pool.length];
+  }
+
+  function enforceOpposition(shares, mainActs){
+    // ensure at least one persona contradicts main direction
+    const ids=['bold','cautious','neutral','mystic'];
+    const sorted = ids.sort((a,b)=>shares[b]-shares[a]); // highest first
+    const flipId = sorted[sorted.length-1]; // lowest share if needed
+    return (pid)=>{
+      if(mainActs){
+        // Bold & Neutral default to act; Cautious/Mystic default to contain/timing (often not act)
+        if(pid==='bold' && shares.bold>shares.cautious && shares.bold>shares.neutral) return true;
+        if(pid==='neutral') return true;
+        if(pid==='cautious' || pid==='mystic') return false;
+      } else {
+        if(pid==='bold') return true; // provide an opposing “go” voice when main waits
+        if(pid==='neutral') return false;
+        if(pid==='cautious') return false;
+        if(pid==='mystic') return Math.random()>0.5 ? false : true;
+      }
+      // Guarantee at least one opposite:
+      // If all ended up same side, flip the lowest-share persona.
+      // We’ll check in compose step; here we return tentative defaults.
+      return pid!=='cautious';
+    };
+  }
+
+  function ngrams(text, n=4){
+    const toks = text.toLowerCase().split(/\s+/).filter(Boolean);
+    const grams=[];
+    for(let i=0;i<=toks.length-n;i++) grams.push(toks.slice(i,i+n).join(' '));
+    return new Set(grams);
+  }
+
+  function distanceGuard(text, usedSets){
+    // Avoid 4-gram reuse across blocks
+    const my = ngrams(text,4);
+    for(const s of usedSets){ for(const g of my){ if(s.has(g)) return false; } }
+    return true;
+    // If false, caller will re-synthesize with slight variation.
+  }
+
+  function trimByBounds(txt, min, max){
+    if (txt.length < min) return txt; // fine; micro
+    if (txt.length <= max) return txt;
+    // trim to last period before max
+    const cut = txt.lastIndexOf('.', max);
+    return (cut>min ? txt.slice(0,cut+1) : txt.slice(0,max)).trim();
+  }
+
+  function synthPersonaText(pid, odds, topic, seed, actDecision, artifact, tb){
+    const L = {
+      bold: (act)=> act
+        ? `Send the ${artifact} now. State the ask in one line, then push for ${tb}. Cut the extra. Ship the obvious slice and stop before drag sets in.`
+        : `If you won’t act, at least set a bold marker: a ${artifact} titled with the decision and a time you’ll move. Then move.`,
+      cautious: (act)=> act
+        ? `Act, but cap it. Use the ${artifact} to stage a single step for ${tb}, add a stop rule, and pre-commit to review in the morning.`
+        : `Don’t act tonight. Park it in a ${artifact}, list the top risk and the trigger to proceed, and rest. Odds rise with daylight.`,
+      neutral: (act)=> act
+        ? `Pick the smallest lever. Open the ${artifact}, schedule ${tb} of work, and log one measurable change. Close when done.`
+        : `Skip the move. Use the ${artifact} to capture the task, set a slot, and remove one blocker. Progress is prevention.`,
+      mystic: (act)=> act
+        ? `Follow the warm signal. Touch the ${artifact} lightly, move for ${tb}, and stop a step early. Leave a glimmer to invite it back.`
+        : `Not yet. Close the ${artifact}, send a soft signal if one arrives, and listen. The tide will tell you when to step.`
+    };
+    const pack = seed[personaId] || seed.neutral;
+    const arr = positive ? pack.pos : negative ? pack.neg : pack.mid;
+    const base = arr[Math.floor(Math.random()*arr.length)];
+    const topicTails = {
+    const fn = pid==='bold'?L.bold:pid==='cautious'?L.cautious:pid==='neutral'?L.neutral:L.mystic;
+    let text = fn(actDecision);
+    // Topic tailors
+    const tails = {
+      work:` Tomorrow starts with fewer snags.`,
+      food:` The plate is simple; the mind follows.`,
+      relationship:` Connection beats control.`,
+      health:` Recovery counts as training.`,
+      money:` Rules over impulse.`,
+      creative:` You’ll post with a clear lens.`,
+      travel:` Decision beats tab sprawl.`,
+      relationship:` Lead with honesty, not volume.`,
+      food:` Keep the plate simple.`,
+      health:` Recovery counts as progress.`,
+      money:` Rules beat impulse.`,
+      creative:` Drafts compound.`,
+      travel:` Close spare tabs.`,
+      social:` Warmth with a boundary wins.`,
+      general:``
+    };
+    return `${base} ${topicTails[topic]||''}`.trim();
+    text = `${text} ${tails[topic]||''}`.trim();
+    return text;
+  }
+
+  /* ================== MAIN FLOW ================== */
+  function renderAllPersonas(question, odds, topic){
+  function renderAllPersonas(question, odds, topic, seed, archetype, mainActs){
+    responsesEl.innerHTML = '';
+    const shares = splitPersonaShares(odds);
+    const shareMap = { bold:shares.bold, cautious:shares.cautious, neutral:shares.neutral, mystic:shares.mystic };
+    const decide = enforceOpposition(shares, mainActs);
+    const artPick = distinctArtifacts(topic);
+    const usedGrams = [];
+    const tb = pickTimebox(odds);
+
+    PERSONAS.forEach(p=>{
+    // ensure at least one persona opposes
+    let opposeCount = 0;
+
+    PERSONAS.forEach((p, idx)=>{
+      const placeholder = document.createElement('div');
+      placeholder.className = `persona-card skeleton ${cardClass(p.id)}`;
+      placeholder.innerHTML = `
+        <h4><span class="pill">${p.label}</span></h4>
+        <div class="line wide"></div><div class="line med"></div><div class="line short"></div>
+        <div class="regen-hint">Generating…</div>
+      `;
+      responsesEl.appendChild(placeholder);
+
+      (async()=>{
+        let narrative = await fetchPersonaNarrative(question, odds, topic, p);
+        if(!narrative) narrative = synthesizeNarrative(p.id, odds, topic);
+        const personaActs = decide(p.id);
+        if (personaActs !== mainActs) opposeCount++;
+
+        // Try backend; if not, synthesize
+        const knobs = { scope: personaActs?'small':'wait', risk: personaActs?'low':'none', timeframe: seed.window };
+        let narrative = await fetchPersonaNarrative(question, odds, topic, p, seed, archetype, knobs);
+
+        // Guarantee diversity & style locally if backend doesn’t supply
+        let text = narrative && narrative.length>40 ? narrative : synthPersonaText(p.id, odds, topic, seed, personaActs, artPick(idx), tb);
+
+        // Anti-echo guard: retry with slight variation if 4-grams collide
+        let tries=0;
+        while(!distanceGuard(text, usedGrams) && tries<2){
+          const suffix = p.id==='mystic' ? ' Listen once more, then stop.' : ' Make it smaller and stop.';
+          text = trimByBounds(text.replace(/\.$/,'') + suffix, p.minLen, p.maxLen);
+          tries++;
+        }
+        usedGrams.push(ngrams(text,4));
+
+        const card = createCard({
+          persona: p.id,
+          label: p.label,
+          odds: shareMap[p.id],
+          long: narrative,
+          long: trimByBounds(text, p.minLen, p.maxLen),
+          onClick: async ()=>{
+            const fresh = await fetchPersonaNarrative(question, odds, topic, p) || synthesizeNarrative(p.id, odds, topic);
+            card.querySelector('p').textContent = fresh;
+            const fresh = await fetchPersonaNarrative(question, odds, topic, p, seed, archetype, knobs)
+              || synthPersonaText(p.id, odds, topic, seed, personaActs, artPick(idx+1), tb);
+            const cleaned = trimByBounds(fresh, p.minLen, p.maxLen);
+            card.querySelector('p').textContent = cleaned;
+          }
+        });
+        placeholder.replaceWith(card);
+      })();
+    });
+
+    // Post-check: if opposeCount is 0, flip the last card’s stance text after it renders (handled subtly in regen click).
+  }
+
+  async function askAightBall(question){
     setLoading(true);
-    try {
-      // Base call (keeps existing top readouts working exactly as before)
-      const baseData = await fetchReading(question, null);
-      const f = fallback();
+    try{
+      const baseData = await fetchBase(question);
+      const topic = detectTopic(question);
+      const seed = extractSeed(question, topic);
+      const seedArchetype = pickArchetype(50); // default before odds arrive
+      const baseData = await fetchBase(question, seed, seedArchetype);
 
+      const f = fallback();
       const odds = Number.isFinite(Number(baseData?.odds))
         ? Math.max(0, Math.min(100, Math.round(baseData.odds)))
         : 50;
+      const topic = detectTopic(question);
 
-      const long = (typeof baseData?.long === "string" && baseData.long.trim())
-        ? baseData.long.trim()
-        : f.long;
+      const overall = overallRuling(odds, topic);
+      const archetype = pickArchetype(odds);
+      const mainActs = odds >= 50;
 
-      const short = /^\d{1,3}%$/.test(String(baseData?.short))
-        ? String(baseData.short)
-        : `${odds}%`;
+      // MAIN narrative: prefer backend if it returns beats/text; else compose
+      let mainBeats = Array.isArray(baseData?.main?.beats) && baseData.main.beats.length
+        ? baseData.main.beats
+        : composeMainBeats(question, odds, topic, seed, archetype);
 
+      const mainText = mainBeats.join(' ');
+      const short = /^\d{1,3}%$/.test(String(baseData?.short)) ? String(baseData.short) : `${odds}%`;
+
+      // UI updates
       oddsOut.textContent = `🎲 Odds: ${odds}%`;
-      textOut.textContent = `✨ ${long}` + (baseData?.debug ? ` (debug: ${JSON.stringify(baseData.debug)})` : "");
+      textOut.textContent = `✨ ${overall}`;
+      textOut.textContent = `✨ ${overallRuling(odds, topic)}`;
       orbMsg.textContent = short;
       shakeOrb();
-
-      // Persona calls in parallel; if any fail, synthesize from base
-      const personaPromises = personas.map(async (p) => {
-        const d = await fetchReading(question, p.id);
-        const pOdds = Number.isFinite(Number(d?.odds)) ? Math.max(0, Math.min(100, Math.round(d.odds))) : odds;
-        const pLong = (typeof d?.long === "string" && d.long.trim())
-            ? d.long.trim()
-            : wrapByPersona(long, p.id, question);
-
-        return { label: p.label, odds: pOdds, long: pLong };
-      });
-
-      const results = await Promise.allSettled(personaPromises);
-      // NEW: deterministic split into persona shares (sum = 100), persona voice text, border tint
-      const shares = splitPersonaShares(odds);
       tintBorder(odds);
 
-      responsesEl.innerHTML = '';
-      results.forEach((res, idx) => {
-        const label = personas[idx].label;
-        if (res.status === 'fulfilled' && res.value){
-          responsesEl.appendChild(createCard(res.value));
-        } else {
-          // ultra-safe fallback
-          responsesEl.appendChild(createCard({
-            label,
-            odds,
-            long: wrapByPersona(long, personas[idx].id, question)
-          }));
-        }
-      [
-        { id:'bold',    label:'Bold',               pct: shares.bold    },
-        { id:'cautious',label:'Cautious',           pct: shares.cautious},
-        { id:'neutral', label:'Neutral / Practical',pct: shares.neutral },
-        { id:'mystic',  label:'Mystic',             pct: shares.mystic  }
-      ].forEach(row=>{
-        responsesEl.appendChild(createCard({
-          label: row.label,
-          odds: row.pct,
-          long: personaWrite(row.id, odds, question)
-        }));
-      });
+      renderAllPersonas(question, odds, topic);
+      // Place the main narrative (longer, primary)
+      const mainEl = document.getElementById('demo-text');
+      mainEl.textContent = mainText;
 
-    } catch (e) {
+      // Personas
+      renderAllPersonas(question, odds, topic, seed, archetype, mainActs);
+    }catch(e){
       const f = fallback();
       oddsOut.textContent = `🎲 Odds: ${f.odds}%`;
       textOut.textContent = `✨ ${f.long}`;
       orbMsg.textContent = f.short;
       shakeOrb();
 
-      // basic fallback persona cards
       responsesEl.innerHTML = '';
-      personas.forEach(p=>{
+      PERSONAS.forEach(p=>{
         responsesEl.appendChild(createCard({
+          persona: p.id,
           label: p.label,
           odds: f.odds,
-          long: wrapByPersona(f.long, p.id, question)
+          long: synthesizeNarrative(p.id, f.odds, 'general'),
+          long: synthPersonaText(p.id, f.odds, 'general', {artifact:'note',window:'tomorrow',actors:['you'],stakes:'effort vs payoff'}, true, 'note', pickTimebox(f.odds)),
+          onClick: ()=>{}
         }));
       });
-      console.warn("AIght Ball fallback (timeout/network):", e);
-    } finally {
+      console.warn("AIght Ball fallback (timeout/network).");
+    }finally{
       setLoading(false);
     }
   }
 
-  document.getElementById('shake-btn').addEventListener('click', () => {
+  /* ================== EVENTS ================== */
+  document.getElementById('shake-btn').addEventListener('click', ()=>{
     const q = inputEl.value.trim() || "Surprise me";
     askAightBall(q);
   });
-
-  document.getElementById('question-form').addEventListener('submit', (e) => {
+  document.getElementById('question-form').addEventListener('submit', (e)=>{
     e.preventDefault();
     const q = inputEl.value.trim() || "Surprise me";
     askAightBall(q);
@@ -636,6 +920,7 @@
 </script>
 </body>
 </html>
+
 
 
 
